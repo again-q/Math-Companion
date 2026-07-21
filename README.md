@@ -1,127 +1,83 @@
-# Math-Companion
-写给我表妹的个人数学 AI 教练，一个小项目
+# Math-Companion 🧮
 
-> 基于微信小程序 + CloudBase 云开发的数学学习助手，包含 AI 个性化总结、知识点地图等功能。
+**数学小伴** — 写给我表妹的个人数学 AI 教练，一个温暖、耐心的微信小程序。
 
-将**编码门禁**注入 Reasonix 项目的零成本方案。AI 必须按 PRD → 架构 → 详细设计 → 编码 → 代码评审 五阶段推进，PreToolUse Hook 在基础设施层强制拦截未经验证的编辑。
+> 基于微信小程序 + CloudBase 云开发 + DeepSeek AI 大模型，为初三学生打造的个性化数学学习陪伴助手。
 
-## 快速开始
+---
+
+## ✨ 功能
+
+| 功能 | 描述 |
+|------|------|
+| 💬 **AI 对话** | 与「数学小伴」自然对话，AI 以提问引导的方式帮你推导答案 |
+| 📝 **学习总结** | 每次对话后自动生成个性化总结，包含知识点地图 |
+| 🧠 **记忆系统** | AI 记住你的学习进度、薄弱点和兴趣，因材施教 |
+| ⚙️ **个性化设置** | 自定义 AI 语气、学习偏好等 |
+
+## 🏗 项目结构
+
+```
+miniprogram/
+├── pages/
+│   ├── chat/          # AI 对话页（主界面）
+│   ├── summary/       # 学习总结页
+│   ├── memory/        # 记忆页面
+│   ├── settings/      # 设置页
+│   └── index/         # 首页
+├── components/        # 公共组件
+├── images/            # 图标与图片资源
+├── services/          # 前端服务层
+└── utils/             # 工具函数
+
+cloudfunctions/
+└── math-agent/        # AI 对话云函数
+    ├── handlers/      # 请求处理器
+    ├── services/      # 业务逻辑（对话、记忆、策略）
+    ├── lib/           # 数据库、AI 调用工具
+    └── config/        # 环境配置
+```
+
+## 🧠 AI 人设
+
+- **名字**：数学小伴
+- **身份**：数学学习陪伴者（初三学生专属）
+- **风格**：专业、温暖、耐心
+- **教学原则**：引导式提问、拆解复杂问题、用生活例子解释抽象概念
+
+## 🛠 技术栈
+
+| 层 | 技术 |
+|----|------|
+| 前端 | 微信小程序原生框架 |
+| 后端 | CloudBase 云函数（Node.js） |
+| AI | DeepSeek 大模型 |
+| 数据库 | CloudBase 文档数据库（NoSQL） |
+| 存储 | CloudBase 云存储 |
+
+## 🚀 本地开发
+
+1. 克隆项目
+2. 使用微信开发者工具打开 `miniprogram/` 目录
+3. 在 CloudBase 控制台绑定环境
+4. 部署云函数 `math-agent`
+5. 在 `cloudfunctions/math-agent/config/` 配置 AI 密钥
 
 ```bash
-# 安装到项目
-bash setup.sh /path/to/your-project
-
-# 启动 Reasonix
-reasonix code /path/to/your-project
-
-# 查看当前进度
-bash gate.sh status
+# 部署云函数
+cd cloudfunctions/math-agent
+npm install
 ```
 
-## 管道流程
+## 📄 文档
 
-```
-PRD ──→ prd-writer ──→ review-expert ──→ 归零 ──→ pass prd
-  ↓
-架构 ──→ system-architect ──→ review-expert ──→ 归零 ──→ pass arch
-  ↓
-详细设计 ──→ task-decomposer ──→ review-expert ──→ 归零 ──→ pass detailed
-  ↓
-编码 ──→ gatekeeper ──→ code-reviewer ──→ 修复 ──→ 归零 ──→ gate.sh post
-  ↓
-代码评审 ──→ code-reviewer ──→ gatekeeper 修复 ──→ 归零 ──→ pass review
-```
+项目完整遵循 Reasonix AI 编码门禁流程开发，文档位于 `doc/` 目录：
 
-## 防御机制
+- `doc/prd/` — 产品需求文档
+- `doc/arch/` — 架构设计文档  
+- `doc/detailed/` — 详细设计文档
+- `doc/review/` — 代码评审报告
 
-| 层 | 机制 | 强制力 |
-|----|------|--------|
-| 运行时拦截 | `PreToolUse` Hook → `gate-hook.sh` | **基础设施级**，AI 无法绕过 |
-| AI 行为引导 | `coding-rules.md` + `CLAUDE.md` + 6 个 Skill | 建议性 |
-| 门禁状态管理 | `gate.sh check / pass / unpass / status` | 手动管理 |
-
-## 文件结构
-
-```
-├── setup.sh                     # 一键安装到其他项目
-├── coding-rules.md              # AI 编码铁律（注入系统提示）
-├── CLAUDE.md                    # AI 行为规则
-│
-├── .reasonix/
-│   ├── settings.json            # PreToolUse Hook 配置
-│   └── skills/
-│       ├── prd-writer/          # 写需求文档
-│       ├── system-architect/    # 写架构文档
-│       ├── task-decomposer/     # 写详细设计文档
-│       ├── conductor/           # 管道指挥家（自动编排）
-│       ├── gatekeeper/          # 编码执行
-│       ├── code-reviewer/       # 代码审查
-│       └── review-expert/       # 文档评审
-│
-├── scripts/
-│   ├── gate.sh                  # 统一门禁 CLI
-│   ├── doc-gate.sh              # 阶段门禁管理
-│   ├── verify-coding.sh         # 编码验证
-│   └── gate-hook.sh             # PreToolUse 门禁脚本
-│
-└── doc/
-    └── .gate/                   # 阶段标记目录
-```
-
-## 七个 Skill
-
-| Skill | 职责 | 调用方式 |
-|-------|------|---------|
-| **`conductor`** | **全自动编排五阶段管道** | **`run_skill({ name: "conductor", arguments: "module=... task=..." })`** |
-| `prd-writer` | 写产品需求文档 | `run_skill({ name: "prd-writer", arguments: "..." })` |
-| `system-architect` | 写架构设计文档 | `run_skill({ name: "system-architect", arguments: "..." })` |
-| `task-decomposer` | 写详细设计文档 | `run_skill({ name: "task-decomposer", arguments: "..." })` |
-| `gatekeeper` | 按设计文档编码 | `run_skill({ name: "gatekeeper", arguments: "module=... task=..." })` |
-| `code-reviewer` | 审查代码质量 | `run_skill({ name: "code-reviewer", arguments: "..." })` |
-| `review-expert` | 评审文档 | `run_skill({ name: "review-expert", arguments: "..." })` |
-|-------|------|---------|
-| `prd-writer` | 写产品需求文档 | `run_skill({ name: "prd-writer", arguments: "..." })` |
-| `system-architect` | 写架构设计文档 | `run_skill({ name: "system-architect", arguments: "..." })` |
-| `task-decomposer` | 写详细设计文档 | `run_skill({ name: "task-decomposer", arguments: "..." })` |
-| `gatekeeper` | 按设计文档编码 | `run_skill({ name: "gatekeeper", arguments: "module=... task=..." })` |
-| `code-reviewer` | 审查代码质量 | `run_skill({ name: "code-reviewer", arguments: "..." })` |
-| `review-expert` | 评审文档 | `run_skill({ name: "review-expert", arguments: "..." })` |
-
-## 安装
-
-```bash
-bash setup.sh                      # 当前目录（自愈）
-bash setup.sh /path/to/target      # 安装到其他项目
-```
-
-安装后启动 Reasonix，PreToolUse Hook 自动生效：
-
-```bash
-reasonix code /path/to/target
-```
-
-## 扩展
-
-### test-enforcement-kit（可选）
-
-[test-enforcement-kit](https://gitee.com/zhan_pu/test-enforcement-kit) 是本套件的测试扩展，在核心五阶段管道完成后按需启用：
-
-```
-核心管道（必选）：PRD → 架构 → 详细设计 → 编码 → 代码评审
-测试扩展（可选）：tester → review-expert → 测试执行 → 归零
-```
-
-详见 [test-enforcement-kit](https://gitee.com/zhan_pu/test-enforcement-kit) 仓库。
-
-## 依赖
-
-- **Reasonix** — 必须。套件基于 Reasonix 的 PreToolUse Hook 和 Skill 机制运行
-- **ai_memory**（可选） — MCP 工具，用于跨会话记忆管理
-
-## 贡献
-
-欢迎提交 Issue 和 PR。阅读 [CONTRIBUTING.md](CONTRIBUTING.md) 了解开发指南。
-
-## 许可证
+## 📜 许可证
 
 MIT
