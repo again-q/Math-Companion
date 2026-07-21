@@ -1,0 +1,99 @@
+<view class="memory-page">
+
+  <view class="memory-header">
+    <text class="memory-header-title">学习记忆</text>
+    <text class="memory-header-sub">你的数学学习旅程</text>
+  </view>
+
+  <view class="section-bar">
+    <view class="section-left">
+      <text class="section-title">历史对话</text>
+      <text class="section-count" wx:if="{{sessions.length > 0}}">{{sessions.length}} 个</text>
+    </view>
+    <view class="btn-new" bindtap="onNewSession" hover-class="btn-hover">
+      <text class="btn-new-icon">＋</text>
+      <text class="btn-new-label">新建对话</text>
+    </view>
+  </view>
+
+  <!-- ============================================================
+       加载状态
+       ============================================================ -->
+  <view class="loading-state" wx:if="{{loading}}">
+    <view class="loading-skeleton" wx:for="{{3}}" wx:key="index">
+      <view class="skeleton-line skeleton-title"></view>
+      <view class="skeleton-line skeleton-meta"></view>
+    </view>
+  </view>
+
+  <!-- ============================================================
+       空状态
+       ============================================================ -->
+  <view class="memory-empty" wx:if="{{sessions.length === 0 && !loading}}">
+    <view class="memory-empty-icon">📝</view>
+    <text class="memory-empty-title">还没有学习记录</text>
+    <text class="memory-empty-desc">开始第一次对话，小伴会记录你的每一次进步~</text>
+    <view class="memory-empty-btn" bindtap="onNewSession" hover-class="btn-hover">
+      <text>开始学习</text>
+    </view>
+  </view>
+
+  <!-- ============================================================
+       会话列表（滑动删除）
+       ============================================================ -->
+  <view class="session-list" wx:if="{{sessions.length > 0}}">
+    <view class="session-item-wrapper"
+      wx:for="{{sessions}}" wx:key="sessionId"
+      data-id="{{item.sessionId}}"
+      bindtouchstart="onTouchStart"
+      bindtouchend="onTouchEnd">
+
+      <!-- 删除按钮（在卡片下方） -->
+      <view class="session-delete-bg">
+        <view class="session-delete-btn" bindtap="onDeleteSession" data-id="{{item.sessionId}}">
+          <text class="delete-icon">🗑</text>
+          <text class="delete-label">删除</text>
+        </view>
+      </view>
+
+      <!-- 会话卡片 -->
+      <view class="session-card"
+        bindtap="viewSession" data-id="{{item.sessionId}}"
+        style="transform: translateX({{item.translateX || 0}}rpx);">
+        <view class="session-card-top">
+          <view class="session-avatar">
+            <text>💬</text>
+          </view>
+          <view class="session-info">
+            <text class="session-title">{{item.title}}</text>
+            <view class="session-meta">
+              <text class="session-time">{{item.time}}</text>
+              <text class="session-dot">·</text>
+              <text class="session-count">{{item.msgCount}} 条消息</text>
+            </view>
+          </view>
+        </view>
+        <view class="session-card-actions">
+          <view class="session-rename-btn" bindtap="onRenameTap" catchtap="onRenameTap" data-id="{{item.sessionId}}" hover-class="btn-hover">
+            <text>✏️</text>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- ============================================================
+       重命名弹窗
+       ============================================================ -->
+  <view class="modal-overlay {{showRenameModal ? 'show' : ''}}" bindtap="onRenameCancel">
+    <view class="modal-card" catchtap="">
+      <text class="modal-title">重命名对话</text>
+      <input class="modal-input" value="{{renameValue}}" bindinput="onRenameInput" focus="true" maxlength="50" placeholder="输入新标题" />
+      <view class="modal-actions">
+        <view class="modal-btn cancel" bindtap="onRenameCancel" hover-class="btn-hover">取消</view>
+        <view class="modal-btn confirm" bindtap="onRenameConfirm" hover-class="btn-hover">确定</view>
+      </view>
+    </view>
+  </view>
+
+</view>

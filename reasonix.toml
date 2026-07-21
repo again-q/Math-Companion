@@ -1,0 +1,2 @@
+[permissions]
+allow = ["install_skill", "Bash(cd /Users/apple/WeChatProjects/miniprogram-3 && git status 2>&1 | head -20)", "mcp__cloudbase-mcp__auth", "Bash(cd /Users/apple/WeChatProjects/miniprogram-3 && git status --short 2>&1 | head -40)", "Bash(cd /Users/apple/WeChatProjects/miniprogram-3 && git init 2>&1)", "Edit", "Bash(cd /Users/apple/WeChatProjects/miniprogram-3 && git remote add origin https://github.com/again-q/Math-Companion.git && git add -A && git commit -m \"总结页完整实现：AI个性化总结+知识点地图+缓存/刷新+陪伴者档案\" 2>&1)"]

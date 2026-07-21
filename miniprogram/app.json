@@ -1,0 +1,52 @@
+{
+  "pages": [
+    "pages/chat/chat",
+    "pages/memory/memory",
+    "pages/summary/summary",
+    "pages/settings/settings",
+    "pages/index/index",
+    "pages/example/index"
+  ],
+  "window": {
+    "backgroundColor": "#FFF0F3",
+    "backgroundTextStyle": "light",
+    "navigationBarBackgroundColor": "#FFB5C2",
+    "navigationBarTitleText": "数学小伴",
+    "navigationBarTextStyle": "white"
+  },
+  "tabBar": {
+    "color": "#9B9B9B",
+    "selectedColor": "#FF7EB3",
+    "backgroundColor": "#FFFFFF",
+    "borderStyle": "white",
+    "list": [
+      {
+        "pagePath": "pages/chat/chat",
+        "text": "对话",
+        "iconPath": "images/icons/chat.png",
+        "selectedIconPath": "images/icons/home-active.png"
+      },
+      {
+        "pagePath": "pages/summary/summary",
+        "text": "总结",
+        "iconPath": "images/icons/chat.png",
+        "selectedIconPath": "images/icons/home-active.png"
+      },
+      {
+        "pagePath": "pages/memory/memory",
+        "text": "记忆",
+        "iconPath": "images/icons/memory.png",
+        "selectedIconPath": "images/icons/business-active.png"
+      },
+      {
+        "pagePath": "pages/settings/settings",
+        "text": "设置",
+        "iconPath": "images/icons/settings.png",
+        "selectedIconPath": "images/icons/usercenter-active.png"
+      }
+    ]
+  },
+  "sitemapLocation": "sitemap.json",
+  "style": "v2",
+  "lazyCodeLoading": "requiredComponents"
+}

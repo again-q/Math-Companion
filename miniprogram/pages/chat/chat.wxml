@@ -1,0 +1,85 @@
+<view class="chat-page">
+
+  <!-- ============================================================
+       消息区
+       ============================================================ -->
+  <scroll-view class="msg-scroll" scroll-y="true" scroll-into-view="{{lastMsgId}}" 
+    scroll-with-animation="true" bindtap="closeSwitcher" bindscroll="onMsgScroll">
+
+    <!-- 顶部渐变背景 -->
+    <view class="msg-bg-top"></view>
+
+    <!-- 空状态 -->
+    <view class="chat-empty" wx:if="{{messages.length === 0 && !isLoading}}">
+      <view class="empty-avatar">
+        <text>🐰</text>
+      </view>
+      <text class="empty-title">小伴在这里~</text>
+      <text class="empty-desc">有什么数学问题想问我吗？我们可以一起讨论，我还会讲故事呢！</text>
+      <view class="empty-suggest">
+        <text class="suggest-label">试试这些问题：</text>
+        <view class="suggest-list">
+          <view class="suggest-tag" wx:for="{{suggestions}}" wx:key="content" 
+            bindtap="onSuggestionTap" data-content="{{item.content}}">
+            <text>{{item.icon}} {{item.content}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 消息列表 -->
+    <view class="msg-list" wx:if="{{messages.length > 0}}">
+      <view class="msg-item {{item.role}}" wx:for="{{messages}}" wx:key="msgId" id="{{item.msgId}}">
+        <view class="msg-avatar assistant" wx:if="{{item.role === 'assistant'}}">
+          <text>🐰</text>
+        </view>
+        
+        <view class="msg-content {{item.role}}">
+          <view class="msg-bubble {{item.role}}" bindlongpress="copyMessage" data-content="{{item.content}}">
+            <view class="typing-dots" wx:if="{{item.role === 'assistant' && item.content === ''}}">
+              <view class="typing-dot"></view>
+              <view class="typing-dot"></view>
+              <view class="typing-dot"></view>
+            </view>
+            <text wx:else>{{item.content}}</text>
+          </view>
+          <text class="msg-time">{{item.time}}</text>
+        </view>
+        
+        <view class="msg-avatar user" wx:if="{{item.role === 'user'}}">
+          <text>👤</text>
+        </view>
+      </view>
+
+    </view>
+
+    <view id="scroll-bottom"></view>
+  </scroll-view>
+
+  <!-- ============================================================
+       滚动到底部按钮
+       ============================================================ -->
+  <view class="scroll-btn {{showScrollToBottom ? 'show' : ''}}" bindtap="scrollToBottom">
+    <text>↧</text>
+  </view>
+
+  <!-- ============================================================
+       底部输入区
+       ============================================================ -->
+  <view class="input-area">
+    <view class="input-container">
+      <view class="input-box">
+        <input class="input" placeholder="输入你想学的内容~" value="{{inputValue}}"
+          bindinput="onInputChange" bindconfirm="onSendMessage" confirm-type="send"
+          disabled="{{isLoading}}" bindfocus="onInputFocus" />
+      </view>
+      <view class="input-voice" bindtap="onVoiceInput">
+        <text>🎤</text>
+      </view>
+      <view class="input-send {{inputValue ? 'active' : ''}}" bindtap="{{inputValue ? 'onSendMessage' : ''}}">
+        <text>➤</text>
+      </view>
+    </view>
+  </view>
+
+</view>

@@ -1,0 +1,180 @@
+/** ============================================================
+    数学小伴 — 全局主题 & 基础样式
+    粉嫩可爱风（樱花粉 #FFB5C2 / 奶油白 #FFF0F3）
+    ============================================================ */
+
+/* ============================================================
+   主题变量
+   ============================================================ */
+page {
+  /* 主色调 */
+  --primary: #FFB5C2;
+  --primary-dark: #FF7EB3;
+  --primary-light: #FFE4E9;
+
+  /* 背景 */
+  --bg-primary: #FFF0F3;
+  --bg-card: #FFFFFF;
+  --bg-input: #F5F5F7;
+  --bg-hover: rgba(255, 181, 194, 0.1);
+
+  /* 文字 */
+  --text-primary: #4A4A4A;
+  --text-secondary: #9B9B9B;
+  --text-tertiary: #C7C7CC;
+  --text-on-primary: #FFFFFF;
+
+  /* 气泡 */
+  --bubble-user: #FFE4E9;
+  --bubble-ai: #FFFFFF;
+
+  /* 功能色 */
+  --white: #FFFFFF;
+  --danger: #FF3B30;
+  --success: #34C759;
+  --warning: #FF9500;
+
+  /* 阴影 */
+  --shadow-sm: rgba(255, 181, 194, 0.12);
+  --shadow: rgba(255, 181, 194, 0.2);
+  --shadow-lg: rgba(255, 181, 194, 0.25);
+
+  /* 圆角 */
+  --radius-sm: 12rpx;
+  --radius: 16rpx;
+  --radius-lg: 20rpx;
+  --radius-xl: 24rpx;
+  --radius-full: 999rpx;
+
+  /* 间距 */
+  --space-xs: 8rpx;
+  --space-sm: 12rpx;
+  --space: 16rpx;
+  --space-lg: 20rpx;
+  --space-xl: 24rpx;
+  --space-2xl: 30rpx;
+
+  /* 字体 */
+  --font-xs: 22rpx;
+  --font-sm: 24rpx;
+  --font-base: 26rpx;
+  --font-md: 28rpx;
+  --font-lg: 30rpx;
+  --font-xl: 32rpx;
+  --font-2xl: 36rpx;
+
+  font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-size: var(--font-base);
+  line-height: 1.6;
+}
+
+/* ============================================================
+   全局通用样式
+   ============================================================ */
+
+/* 页面容器 */
+.page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  padding: var(--space-2xl);
+  box-sizing: border-box;
+}
+
+/* 卡片 */
+.card {
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  padding: var(--space-xl);
+  box-shadow: 0 2rpx 12rpx var(--shadow-sm);
+}
+
+/* 按钮基础样式 */
+.btn-primary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 80rpx;
+  border-radius: var(--radius-full);
+  font-size: var(--font-lg);
+  font-weight: 600;
+  background: var(--primary-dark);
+  color: var(--text-on-primary);
+  transition: all 0.2s ease;
+}
+
+.btn-primary:active {
+  opacity: 0.85;
+  transform: scale(0.97);
+}
+
+.btn-secondary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 80rpx;
+  border-radius: var(--radius-full);
+  font-size: var(--font-lg);
+  font-weight: 500;
+  background: var(--bg-input);
+  color: var(--text-secondary);
+}
+
+.btn-secondary:active {
+  opacity: 0.8;
+}
+
+/* 空状态 */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 30% 40rpx 0;
+}
+
+.empty-state .empty-icon {
+  font-size: 120rpx;
+  margin-bottom: var(--space-xl);
+  animation: bounce 2s ease-in-out infinite;
+}
+
+.empty-state .empty-text {
+  font-size: var(--font-md);
+  color: var(--text-secondary);
+  text-align: center;
+  line-height: 1.6;
+}
+
+/* 加载状态 */
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 80rpx 0;
+  color: var(--text-secondary);
+  font-size: var(--font-md);
+}
+
+/* 动画 */
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-12rpx); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10rpx); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(30rpx); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-20rpx); }
+  to { opacity: 1; transform: translateY(0); }
+}

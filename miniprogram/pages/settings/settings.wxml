@@ -1,0 +1,56 @@
+<view class="settings-page">
+
+  <view class="settings-header">
+    <text class="settings-header-title">设置</text>
+    <text class="settings-header-sub">自定义 AI 助手配置</text>
+  </view>
+
+  <view class="settings-card">
+    <view class="settings-card-header">
+      <view class="settings-card-title-row">
+        <view class="settings-card-icon">
+          <text>🤖</text>
+        </view>
+        <text class="settings-card-title">AI 系统提示词</text>
+      </view>
+      <text class="settings-card-desc">在这里自定义 AI 的人设和行为规则。保存后所有对话将以此提示词为准。</text>
+    </view>
+
+    <view class="prompt-editor-wrap">
+      <textarea class="prompt-editor" value="{{systemPrompt}}" bindinput="onPromptChange" maxlength="5000" placeholder="输入系统提示词，例如：你是一个温柔耐心的数学老师..." />
+      <view class="prompt-footer">
+        <view class="prompt-hint" wx:if="{{!systemPrompt}}">
+          <text>💡 留空将使用默认人设</text>
+        </view>
+        <view class="prompt-count {{promptLength > 4000 ? 'warn' : ''}}">
+          <text>{{promptLength}}</text>
+          <text> / 5000</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- ============================================================
+       操作按钮
+       ============================================================ -->
+  <view class="settings-actions">
+    <view class="btn-save {{changed ? 'active' : ''}} {{saveSuccess ? 'success' : ''}}" bindtap="{{changed ? 'savePrompt' : ''}}" hover-class="btn-hover">
+      <text class="btn-save-icon">✓</text>
+      <text class="btn-save-label">{{saveSuccess ? '保存成功' : (changed ? '保存设置' : '已保存')}}</text>
+    </view>
+
+    <view class="btn-reset" bindtap="resetPrompt" hover-class="btn-hover">
+      <text class="btn-reset-icon">↺</text>
+      <text class="btn-reset-label">恢复默认</text>
+    </view>
+  </view>
+
+  <!-- ============================================================
+       底部信息
+       ============================================================ -->
+  <view class="settings-footer">
+    <text class="settings-footer-text">数学小伴 v1.0</text>
+    <text class="settings-footer-text">用 AI 让数学学习更轻松</text>
+  </view>
+
+</view>

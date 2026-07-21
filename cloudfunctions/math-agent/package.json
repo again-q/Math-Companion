@@ -1,0 +1,10 @@
+{
+  "name": "math-agent",
+  "version": "1.0.0",
+  "description": "数学小伴 - AI 对话云函数",
+  "main": "index.js",
+  "dependencies": {
+    "wx-server-sdk": "latest",
+    "nanoid": "^3.3.4"
+  }
+}

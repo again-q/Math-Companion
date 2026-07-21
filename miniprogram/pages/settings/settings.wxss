@@ -1,0 +1,217 @@
+/* ============================================================
+   数学小伴 — 设置页样式 v2
+   ============================================================ */
+
+.settings-page {
+  padding: var(--space-2xl);
+  min-height: 100vh;
+  box-sizing: border-box;
+}
+
+/* ============================================================
+   页面头部
+   ============================================================ */
+.settings-header {
+  margin-bottom: var(--space-2xl);
+  animation: slideDown 0.4s ease;
+}
+
+.settings-header-title {
+  display: block;
+  font-size: 40rpx;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 6rpx;
+}
+
+.settings-header-sub {
+  display: block;
+  font-size: var(--font-md);
+  color: var(--text-secondary);
+}
+
+/* ============================================================
+   设置卡片
+   ============================================================ */
+.settings-card {
+  background: var(--bg-card);
+  border-radius: var(--radius-xl);
+  padding: var(--space-xl) var(--space-2xl);
+  box-shadow: 0 2rpx 12rpx var(--shadow-sm);
+  margin-bottom: var(--space-2xl);
+  animation: slideUp 0.4s ease;
+}
+
+.settings-card-header {
+  margin-bottom: var(--space-lg);
+  padding-bottom: var(--space-lg);
+  border-bottom: 2rpx solid var(--bg-input);
+}
+
+.settings-card-title-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space);
+  margin-bottom: var(--space-sm);
+}
+
+.settings-card-icon {
+  width: 48rpx;
+  height: 48rpx;
+  background: var(--bg-primary);
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.settings-card-icon text {
+  font-size: 28rpx;
+}
+
+.settings-card-title {
+  font-size: var(--font-xl);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.settings-card-desc {
+  display: block;
+  font-size: var(--font-sm);
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin-left: calc(48rpx + var(--space));
+}
+
+/* ============================================================
+   提示词编辑器
+   ============================================================ */
+.prompt-editor-wrap {
+  position: relative;
+}
+
+.prompt-editor {
+  width: 100%;
+  min-height: 360rpx;
+  background: var(--bg-input);
+  border-radius: var(--radius);
+  padding: var(--space-lg);
+  font-size: var(--font-base);
+  color: var(--text-primary);
+  line-height: 1.7;
+  box-sizing: border-box;
+  border: 2rpx solid transparent;
+  transition: border-color 0.2s ease;
+}
+
+.prompt-editor:focus {
+  border-color: var(--primary);
+}
+
+.prompt-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: var(--space-sm);
+  padding: 0 var(--space-sm);
+}
+
+.prompt-hint text {
+  font-size: var(--font-xs);
+  color: var(--text-tertiary);
+}
+
+.prompt-count {
+  font-size: var(--font-xs);
+  color: var(--text-tertiary);
+  text-align: right;
+}
+
+.prompt-count.warn {
+  color: var(--warning);
+}
+
+/* ============================================================
+   操作按钮
+   ============================================================ */
+.settings-actions {
+  display: flex;
+  gap: var(--space);
+  animation: slideUp 0.4s ease;
+  animation-delay: 0.1s;
+  animation-fill-mode: both;
+}
+
+.btn-save, .btn-reset {
+  flex: 1;
+  height: 88rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8rpx;
+  border-radius: var(--radius-full);
+  font-size: var(--font-lg);
+  font-weight: 600;
+  transition: all 0.25s ease;
+}
+
+.btn-save {
+  background: var(--bg-input);
+  color: var(--text-tertiary);
+}
+
+.btn-save.active {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+  color: var(--text-on-primary);
+  box-shadow: 0 4rpx 12rpx var(--shadow);
+}
+
+.btn-save.success {
+  background: linear-gradient(135deg, #67C23A 0%, #52C41A 100%);
+  box-shadow: 0 4rpx 16rpx rgba(103, 194, 58, 0.35);
+  animation: successPulse 0.4s ease;
+}
+
+.btn-save-icon {
+  font-size: var(--font-md);
+  font-weight: bold;
+}
+
+.btn-reset {
+  background: var(--bg-card);
+  color: var(--text-secondary);
+  border: 2rpx solid var(--text-tertiary);
+}
+
+.btn-reset-icon {
+  font-size: var(--font-lg);
+}
+
+.btn-hover {
+  opacity: 0.85;
+  transform: scale(0.97);
+}
+
+/* ============================================================
+   底部信息
+   ============================================================ */
+.settings-footer {
+  text-align: center;
+  margin-top: 80rpx;
+  animation: fadeIn 0.6s ease;
+  animation-delay: 0.2s;
+  animation-fill-mode: both;
+}
+
+.settings-footer-text {
+  display: block;
+  font-size: var(--font-xs);
+  color: var(--text-tertiary);
+  line-height: 1.8;
+}
+
+@keyframes successPulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}

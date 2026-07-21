@@ -1,0 +1,7 @@
+{
+  "navigationBarTitleText": "学习记忆",
+  "navigationBarBackgroundColor": "#FFB5C2",
+  "navigationBarTextStyle": "white",
+  "enablePullDownRefresh": true,
+  "backgroundColor": "#FFF0F3"
+}

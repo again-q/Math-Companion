@@ -1,0 +1,9 @@
+node_modules/
+.miniprogram/
+cloudfunctions/*/node_modules/
+.DS_Store
+*.log
+.idea/
+.vscode/
+*.local.js
+project.private.config.json

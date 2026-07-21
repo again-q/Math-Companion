@@ -1,0 +1,101 @@
+<view class="summary-page">
+  <view class="header">
+    <view class="header-bg"></view>
+    <view class="header-content">
+      <view class="title-row">
+        <text class="title">📊 学习总结</text>
+        <text class="subtitle">记录你的每一次进步</text>
+      </view>
+      <button class="header-refresh-btn" bindtap="refreshSummary" loading="{{refreshing}}">刷新</button>
+    </view>
+  </view>
+
+  <view class="content" wx:if="{{!loading}}">
+    <view wx:if="{{empty}}" class="empty-state">
+      <view class="empty-icon">📚</view>
+      <text class="empty-title">还没有学习记录</text>
+      <text class="empty-desc">快来开始你的数学之旅吧！</text>
+      <button class="start-btn" bindtap="goToChat">开始学习</button>
+    </view>
+
+    <!-- 范围切换 -->
+    <view class="scope-tabs" wx:if="{{!empty}}">
+      <view class="scope-tab {{scope === 'recent' ? 'active' : ''}}" data-scope="recent" bindtap="switchScope">
+        <text>📋 近期学习</text>
+      </view>
+      <view class="scope-tab {{scope === 'all' ? 'active' : ''}}" data-scope="all" bindtap="switchScope">
+        <text>📊 全部历史</text>
+      </view>
+    </view>
+
+    <view class="stats-grid">
+      <view class="stat-card">
+        <text class="stat-value">{{learningDays}}</text>
+        <text class="stat-label">学习天数</text>
+      </view>
+      <view class="stat-card">
+        <text class="stat-value">{{totalSessions}}</text>
+        <text class="stat-label">学习次数</text>
+      </view>
+      <view class="stat-card">
+        <text class="stat-value">{{totalMessages}}</text>
+        <text class="stat-label">对话消息</text>
+      </view>
+      <view class="stat-card">
+        <text class="stat-value">{{topicsCovered.length}}</text>
+        <text class="stat-label">知识点</text>
+      </view>
+    </view>
+
+    <view class="progress-section">
+      <view class="section-title-row" bindtap="toggleTopics">
+        <text class="section-title">📈 知识点掌握情况</text>
+        <view class="toggle-text">
+          <text>{{topicsExpanded ? '收起' : '展开'}}</text>
+          <text class="section-arrow">{{topicsExpanded ? '▼' : '▶'}}</text>
+        </view>
+      </view>
+      <view class="progress-bars" wx:if="{{topicsExpanded}}">
+        <view wx:for="{{groupedTopics}}" wx:key="grade" class="grade-group">
+          <view class="grade-title">{{item.grade}}</view>
+          <view class="progress-item" wx:for="{{item.topics}}" wx:key="topic" wx:for-item="topic">
+            <view class="progress-header">
+              <text class="progress-name">{{topic.topic}}</text>
+              <text class="progress-level">{{topic.levelDesc}}</text>
+            </view>
+            <view class="progress-bar-bg">
+              <view class="progress-bar-fill" style="width: {{topic.level * 100}}%"></view>
+            </view>
+            <view class="progress-footer">
+              <text class="progress-count">练习 {{topic.practicedCount}} 次</text>
+              <text class="progress-rate">{{Math.round(topic.level * 100)}}%</text>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <view class="suggestions-section" wx:if="{{suggestions.length > 0}}">
+      <view class="section-title">💡 学习建议</view>
+      <view class="suggestions-list">
+        <view class="suggestion-item" wx:for="{{suggestions}}" wx:key="index">
+          <text>{{item}}</text>
+        </view>
+      </view>
+    </view>
+
+    <view class="summary-card">
+      <view class="section-title">🌟 小伴说</view>
+      <view class="summary-content">
+        <text>{{summary}}</text>
+      </view>
+    </view>
+
+    <view class="bottom-space"></view>
+  </view>
+
+  <view wx:else class="loading-state">
+    <view class="loading-spinner"></view>
+    <text class="loading-text">加载中...</text>
+  </view>
+</view>

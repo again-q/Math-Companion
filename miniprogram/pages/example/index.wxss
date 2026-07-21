@@ -1,0 +1,275 @@
+/* ============================================================
+   数学小伴 — 示例页样式
+   ============================================================ */
+
+.example-page {
+  padding: var(--space-2xl);
+  min-height: 100vh;
+  background: var(--bg-primary);
+  box-sizing: border-box;
+}
+
+/* ============================================================
+   页面头部
+   ============================================================ */
+.example-header {
+  margin-bottom: var(--space-2xl);
+  animation: slideDown 0.4s ease;
+}
+
+.example-header-title {
+  display: block;
+  font-size: 40rpx;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 6rpx;
+}
+
+.example-header-sub {
+  display: block;
+  font-size: var(--font-md);
+  color: var(--text-secondary);
+}
+
+/* ============================================================
+   示例列表
+   ============================================================ */
+.example-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space);
+}
+
+.example-card {
+  display: flex;
+  align-items: flex-start;
+  background: var(--bg-card);
+  border-radius: var(--radius-xl);
+  padding: var(--space-xl);
+  box-shadow: 0 4rpx 16rpx var(--shadow-sm);
+  transition: all 0.3s ease;
+}
+
+.example-card:active {
+  transform: scale(0.98);
+  box-shadow: 0 2rpx 8rpx var(--shadow-sm);
+}
+
+.example-card-icon {
+  width: 64rpx;
+  height: 64rpx;
+  background: var(--bg-primary);
+  border-radius: var(--radius-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: var(--space);
+  flex-shrink: 0;
+}
+
+.example-card-icon text {
+  font-size: 32rpx;
+}
+
+.example-card-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.example-card-title {
+  display: block;
+  font-size: var(--font-xl);
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 6rpx;
+}
+
+.example-card-desc {
+  display: block;
+  font-size: var(--font-sm);
+  color: var(--text-secondary);
+  margin-bottom: 8rpx;
+}
+
+.example-card-question {
+  display: flex;
+  align-items: flex-start;
+  gap: 4rpx;
+}
+
+.question-label {
+  font-size: var(--font-xs);
+  color: var(--text-tertiary);
+  flex-shrink: 0;
+}
+
+.question-text {
+  font-size: var(--font-xs);
+  color: var(--primary-dark);
+  font-weight: 500;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.example-card-arrow {
+  width: 48rpx;
+  height: 48rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.example-card-arrow text {
+  font-size: 36rpx;
+  color: var(--text-tertiary);
+}
+
+/* ============================================================
+   详情弹窗
+   ============================================================ */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.4);
+  z-index: 999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+
+.modal-overlay.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.modal-card {
+  background: var(--bg-card);
+  border-radius: var(--radius-xl);
+  padding: var(--space-2xl);
+  width: 640rpx;
+  margin: var(--space-2xl);
+  transform: scale(0.9);
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.modal-overlay.show .modal-card {
+  transform: scale(1);
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: var(--space-lg);
+}
+
+.modal-icon {
+  width: 56rpx;
+  height: 56rpx;
+  background: var(--bg-primary);
+  border-radius: var(--radius-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: var(--space);
+}
+
+.modal-icon text {
+  font-size: 28rpx;
+}
+
+.modal-title {
+  flex: 1;
+  font-size: var(--font-xl);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.modal-close {
+  width: 44rpx;
+  height: 44rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-input);
+  border-radius: 50%;
+}
+
+.modal-close text {
+  font-size: 24rpx;
+  color: var(--text-secondary);
+}
+
+.modal-body {
+  margin-bottom: var(--space-xl);
+}
+
+.modal-desc {
+  display: block;
+  font-size: var(--font-md);
+  color: var(--text-secondary);
+  margin-bottom: var(--space-lg);
+  line-height: 1.6;
+}
+
+.modal-question-box {
+  background: var(--bg-primary);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  border-left: 6rpx solid var(--primary);
+}
+
+.modal-question {
+  font-size: var(--font-lg);
+  color: var(--text-primary);
+  font-weight: 500;
+  line-height: 1.7;
+}
+
+.modal-actions {
+  display: flex;
+  gap: var(--space);
+}
+
+.modal-btn {
+  flex: 1;
+  height: 80rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-full);
+  font-size: var(--font-lg);
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.modal-btn.secondary {
+  background: var(--bg-input);
+  color: var(--text-secondary);
+}
+
+.modal-btn.primary {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+  color: var(--text-on-primary);
+}
+
+.modal-btn:active {
+  opacity: 0.85;
+  transform: scale(0.97);
+}
+
+/* ============================================================
+   动画
+   ============================================================ */
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-20rpx); }
+  to { opacity: 1; transform: translateY(0); }
+}

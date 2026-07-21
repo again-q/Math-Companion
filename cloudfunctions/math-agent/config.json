@@ -1,0 +1,11 @@
+{
+  "timeout": 60,
+  "envVariables": {},
+  "triggers": [
+    {
+      "name": "dailyMemoryRebuild",
+      "type": "timer",
+      "config": "0 0 2 * * * *"
+    }
+  ]
+}

@@ -1,0 +1,70 @@
+<view class="example-page">
+
+  <!-- ============================================================
+       页面头部
+       ============================================================ -->
+  <view class="example-header">
+    <text class="example-header-title">示例题目</text>
+    <text class="example-header-sub">点击卡片查看示例，复制后去对话页提问</text>
+  </view>
+
+  <!-- ============================================================
+       示例列表
+       ============================================================ -->
+  <view class="example-list">
+    <view class="example-card" 
+      wx:for="{{examples}}" 
+      wx:key="id"
+      data-index="{{index}}"
+      bindtap="selectExample">
+      <view class="example-card-icon">
+        <text>{{item.icon}}</text>
+      </view>
+      <view class="example-card-info">
+        <text class="example-card-title">{{item.title}}</text>
+        <text class="example-card-desc">{{item.desc}}</text>
+        <view class="example-card-question">
+          <text class="question-label">示例问题：</text>
+          <text class="question-text">{{item.question}}</text>
+        </view>
+      </view>
+      <view class="example-card-arrow">
+        <text>›</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- ============================================================
+       详情弹窗
+       ============================================================ -->
+  <view class="modal-overlay {{showDetail ? 'show' : ''}}" bindtap="closeDetail">
+    <view class="modal-card" catchtap="">
+      <view class="modal-header">
+        <view class="modal-icon">
+          <text>{{selectedExample ? selectedExample.icon : ''}}</text>
+        </view>
+        <text class="modal-title">{{selectedExample ? selectedExample.title : ''}}</text>
+        <view class="modal-close" bindtap="closeDetail">
+          <text>✕</text>
+        </view>
+      </view>
+      
+      <view class="modal-body">
+        <text class="modal-desc">{{selectedExample ? selectedExample.desc : ''}}</text>
+        <view class="modal-question-box">
+          <text class="modal-question">{{selectedExample ? selectedExample.question : ''}}</text>
+        </view>
+      </view>
+      
+      <view class="modal-actions">
+        <view class="modal-btn secondary" bindtap="copyQuestion" data-question="{{selectedExample ? selectedExample.question : ''}}">
+          <text>📋 复制问题</text>
+        </view>
+        <view class="modal-btn primary" bindtap="goToChat">
+          <text>💬 去提问</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+</view>

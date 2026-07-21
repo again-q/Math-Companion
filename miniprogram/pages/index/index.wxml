@@ -1,0 +1,65 @@
+<view class="welcome-page">
+
+  <!-- ============================================================
+       顶部装饰
+       ============================================================ -->
+  <view class="welcome-deco">
+    <view class="deco-circle deco-circle-1"></view>
+    <view class="deco-circle deco-circle-2"></view>
+    <view class="deco-circle deco-circle-3"></view>
+  </view>
+
+  <!-- ============================================================
+       主视觉区域
+       ============================================================ -->
+  <view class="welcome-main">
+    <view class="welcome-avatar">
+      <text class="avatar-emoji">🐰</text>
+      <view class="avatar-glow"></view>
+    </view>
+    
+    <text class="welcome-title">数学小伴</text>
+    <text class="welcome-subtitle">让数学学习变得有趣</text>
+    
+    <view class="welcome-desc">
+      <text>我是你的专属数学辅导老师小伴~</text>
+      <text>我们可以一起讨论题目、</text>
+      <text>探索数学世界，还能听故事哦！</text>
+    </view>
+  </view>
+
+  <!-- ============================================================
+       特色功能卡片
+       ============================================================ -->
+  <view class="features-section">
+    <view class="feature-card" wx:for="{{features}}" wx:key="icon">
+      <view class="feature-icon">
+        <text>{{item.icon}}</text>
+      </view>
+      <text class="feature-title">{{item.title}}</text>
+      <text class="feature-desc">{{item.desc}}</text>
+    </view>
+  </view>
+
+  <!-- ============================================================
+       开始按钮
+       ============================================================ -->
+  <view class="welcome-actions">
+    <view class="btn-start" bindtap="goToChat" hover-class="btn-hover">
+      <text class="btn-start-icon">🚀</text>
+      <text class="btn-start-label">开始学习</text>
+    </view>
+    
+    <view class="btn-secondary" bindtap="goToExample" hover-class="btn-hover">
+      <text>看看示例</text>
+    </view>
+  </view>
+
+  <!-- ============================================================
+       底部装饰
+       ============================================================ -->
+  <view class="welcome-footer">
+    <text class="footer-text">让数学不再枯燥，让学习充满乐趣</text>
+  </view>
+
+</view>

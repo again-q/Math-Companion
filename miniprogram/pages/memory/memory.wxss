@@ -1,0 +1,472 @@
+/* ============================================================
+   数学小伴 — 记忆页样式 v2
+   ============================================================ */
+
+.memory-page {
+  padding: var(--space-2xl);
+  min-height: 100vh;
+  box-sizing: border-box;
+}
+
+/* ============================================================
+   页面头部
+   ============================================================ */
+.memory-header {
+  margin-bottom: var(--space-2xl);
+  animation: slideDown 0.4s ease;
+}
+
+.memory-header-title {
+  display: block;
+  font-size: 40rpx;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 6rpx;
+}
+
+.memory-header-sub {
+  display: block;
+  font-size: var(--font-md);
+  color: var(--text-secondary);
+}
+
+/* ============================================================
+   学习总结卡片
+   ============================================================ */
+.summary-card {
+  display: flex;
+  align-items: center;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+  border-radius: var(--radius-xl);
+  padding: var(--space-xl) var(--space-2xl);
+  margin-bottom: var(--space-2xl);
+  box-shadow: 0 6rpx 20rpx var(--shadow);
+  animation: slideUp 0.4s ease;
+}
+
+.card-hover {
+  opacity: 0.9;
+}
+
+.summary-icon-wrap {
+  width: 72rpx;
+  height: 72rpx;
+  background: rgba(255,255,255,0.2);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: var(--space);
+  flex-shrink: 0;
+}
+
+.summary-icon {
+  font-size: 40rpx;
+}
+
+.summary-info {
+  flex: 1;
+}
+
+.summary-title {
+  display: block;
+  font-size: var(--font-xl);
+  font-weight: 600;
+  color: var(--text-on-primary);
+  margin-bottom: 4rpx;
+}
+
+.summary-desc {
+  display: block;
+  font-size: var(--font-sm);
+  color: rgba(255,255,255,0.8);
+}
+
+.summary-arrow {
+  width: 48rpx;
+  height: 48rpx;
+  background: rgba(255,255,255,0.2);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.summary-arrow text {
+  font-size: 36rpx;
+  color: var(--text-on-primary);
+  font-weight: 300;
+}
+
+/* ============================================================
+   会话列表标题栏
+   ============================================================ */
+.section-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-lg);
+  animation: slideUp 0.4s ease;
+  animation-delay: 0.1s;
+  animation-fill-mode: both;
+}
+
+.section-left {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-sm);
+}
+
+.section-title {
+  font-size: var(--font-xl);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.section-count {
+  font-size: var(--font-sm);
+  color: var(--text-tertiary);
+}
+
+.btn-new {
+  display: flex;
+  align-items: center;
+  gap: 6rpx;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+  padding: 12rpx var(--space-lg);
+  border-radius: var(--radius-full);
+  box-shadow: 0 4rpx 12rpx var(--shadow);
+}
+
+.btn-new-icon {
+  font-size: var(--font-sm);
+  color: var(--text-on-primary);
+  font-weight: 300;
+}
+
+.btn-new-label {
+  font-size: var(--font-sm);
+  color: var(--text-on-primary);
+  font-weight: 500;
+}
+
+.btn-hover {
+  opacity: 0.8;
+  transform: scale(0.95);
+}
+
+/* ============================================================
+   加载骨架
+   ============================================================ */
+.loading-state {
+  padding: var(--space) 0;
+}
+
+.loading-skeleton {
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  padding: var(--space-lg);
+  margin-bottom: var(--space);
+  box-shadow: 0 2rpx 8rpx var(--shadow-sm);
+}
+
+.skeleton-line {
+  height: 28rpx;
+  border-radius: var(--radius-sm);
+  background: linear-gradient(90deg, var(--bg-input) 25%, #FAFAFA 50%, var(--bg-input) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+
+.skeleton-title {
+  width: 60%;
+  margin-bottom: var(--space-sm);
+}
+
+.skeleton-meta {
+  width: 35%;
+}
+
+/* ============================================================
+   空状态
+   ============================================================ */
+.memory-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 15%;
+  animation: fadeIn 0.6s ease;
+}
+
+.memory-empty-icon {
+  font-size: 100rpx;
+  margin-bottom: var(--space-lg);
+  animation: bounce 2s ease-in-out infinite;
+}
+
+.memory-empty-title {
+  font-size: var(--font-2xl);
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: var(--space-sm);
+}
+
+.memory-empty-desc {
+  font-size: var(--font-md);
+  color: var(--text-secondary);
+  text-align: center;
+  line-height: 1.6;
+  max-width: 500rpx;
+  margin-bottom: var(--space-2xl);
+}
+
+.memory-empty-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 80rpx;
+  padding: 0 48rpx;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+  border-radius: var(--radius-full);
+  box-shadow: 0 4rpx 12rpx var(--shadow);
+}
+
+.memory-empty-btn text {
+  font-size: var(--font-lg);
+  font-weight: 600;
+  color: var(--text-on-primary);
+}
+
+/* ============================================================
+   会话列表
+   ============================================================ */
+.session-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space);
+}
+
+/* 每行：可滑出删除按钮 */
+.session-item-wrapper {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius);
+  animation: slideUp 0.3s ease;
+  animation-fill-mode: both;
+}
+
+/* 删除按钮背景层 */
+.session-delete-bg {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  background: var(--danger);
+  border-radius: var(--radius);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  z-index: 1;
+}
+
+.session-delete-btn {
+  width: 140rpx;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4rpx;
+}
+
+.delete-icon {
+  font-size: 32rpx;
+}
+
+.delete-label {
+  font-size: var(--font-xs);
+  color: var(--text-on-primary);
+  font-weight: 500;
+}
+
+/* 会话卡片（在删除层之上，可滑动） */
+.session-card {
+  display: flex;
+  align-items: center;
+  background: var(--bg-card);
+  padding: var(--space-lg) var(--space);
+  border-radius: var(--radius);
+  position: relative;
+  z-index: 2;
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2rpx 8rpx var(--shadow-sm);
+}
+
+.session-card:active {
+  background: var(--bg-input);
+}
+
+.session-card-top {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+}
+
+.session-avatar {
+  width: 64rpx;
+  height: 64rpx;
+  background: var(--bg-primary);
+  border-radius: var(--radius);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: var(--space);
+  flex-shrink: 0;
+}
+
+.session-avatar text {
+  font-size: 32rpx;
+}
+
+.session-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.session-title {
+  display: block;
+  font-size: var(--font-lg);
+  font-weight: 500;
+  color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-bottom: 4rpx;
+}
+
+.session-meta {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+}
+
+.session-time {
+  font-size: var(--font-xs);
+  color: var(--text-tertiary);
+}
+
+.session-dot {
+  font-size: var(--font-xs);
+  color: var(--text-tertiary);
+}
+
+.session-count {
+  font-size: var(--font-xs);
+  color: var(--text-tertiary);
+}
+
+.session-card-actions {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  margin-left: var(--space-sm);
+}
+
+.session-rename-btn {
+  width: 56rpx;
+  height: 56rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+
+.session-rename-btn text {
+  font-size: 28rpx;
+}
+
+/* ============================================================
+   重命名弹窗
+   ============================================================ */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.4);
+  z-index: 999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+
+.modal-overlay.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.modal-card {
+  background: var(--bg-card);
+  border-radius: var(--radius-xl);
+  padding: var(--space-2xl);
+  width: 560rpx;
+  transform: scale(0.9);
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.modal-overlay.show .modal-card {
+  transform: scale(1);
+}
+
+.modal-title {
+  display: block;
+  font-size: var(--font-xl);
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: var(--space-lg);
+  text-align: center;
+}
+
+.modal-input {
+  width: 100%;
+  height: 80rpx;
+  background: var(--bg-input);
+  border-radius: var(--radius);
+  padding: 0 var(--space-lg);
+  font-size: var(--font-lg);
+  color: var(--text-primary);
+  box-sizing: border-box;
+}
+
+.modal-actions {
+  display: flex;
+  gap: var(--space);
+  margin-top: var(--space-2xl);
+}
+
+.modal-btn {
+  flex: 1;
+  height: 80rpx;
+  line-height: 80rpx;
+  text-align: center;
+  border-radius: var(--radius-full);
+  font-size: var(--font-lg);
+  font-weight: 600;
+}
+
+.modal-btn.cancel {
+  background: var(--bg-input);
+  color: var(--text-secondary);
+}
+
+.modal-btn.confirm {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+  color: var(--text-on-primary);
+}
