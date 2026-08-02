@@ -225,7 +225,7 @@
   height: 88rpx;
   background: var(--bg-card);
   border-radius: var(--radius-full);
-  border: 2rpx solid rgba(255, 181, 194, 0.3);
+  border: 2rpx solid rgba(0, 0, 0, 0.08);
 }
 
 .btn-secondary text {

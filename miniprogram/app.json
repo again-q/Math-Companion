@@ -5,7 +5,10 @@
     "pages/summary/summary",
     "pages/settings/settings",
     "pages/index/index",
-    "pages/example/index"
+    "pages/example/index",
+    "pages/report/knowledge/index",
+    "pages/report/suggestions/index",
+    "pages/report/summary/index"
   ],
   "window": {
     "backgroundColor": "#FFF0F3",
@@ -24,25 +27,25 @@
         "pagePath": "pages/chat/chat",
         "text": "对话",
         "iconPath": "images/icons/chat.png",
-        "selectedIconPath": "images/icons/home-active.png"
+        "selectedIconPath": "images/icons/chat-active.png"
       },
       {
         "pagePath": "pages/summary/summary",
         "text": "总结",
-        "iconPath": "images/icons/chat.png",
-        "selectedIconPath": "images/icons/home-active.png"
+        "iconPath": "images/icons/summary.png",
+        "selectedIconPath": "images/icons/summary-active.png"
       },
       {
         "pagePath": "pages/memory/memory",
         "text": "记忆",
         "iconPath": "images/icons/memory.png",
-        "selectedIconPath": "images/icons/business-active.png"
+        "selectedIconPath": "images/icons/memory-active.png"
       },
       {
         "pagePath": "pages/settings/settings",
         "text": "设置",
         "iconPath": "images/icons/settings.png",
-        "selectedIconPath": "images/icons/usercenter-active.png"
+        "selectedIconPath": "images/icons/settings-active.png"
       }
     ]
   },

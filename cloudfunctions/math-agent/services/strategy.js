@@ -64,6 +64,20 @@ function detectEmotion(content) {
  * @param {Array} messages - 最近消息列表
  * @returns {number} 连续答对次数
  */
+// 明确的答对表达（避免把提问里的"等于/结果/对不对"误判为答对）
+const CORRECT_PATTERNS = ['懂了', '明白了', '会了', '原来如此', '答对了', '做对了', '解出来了', '对了', '对呀', '对的'];
+
+/**
+ * 判断一条用户消息是否为"答对"信号
+ * @param {string} content - 用户消息
+ * @returns {boolean}
+ */
+function isCorrectAnswer(content) {
+  if (!content) return false;
+  const lower = content.toLowerCase();
+  return CORRECT_PATTERNS.some(k => lower.includes(k));
+}
+
 function countConsecutiveCorrect(messages) {
   let count = 0;
 
@@ -71,11 +85,7 @@ function countConsecutiveCorrect(messages) {
     const msg = messages[i];
     if (msg.role !== 'user') continue;
 
-    const lower = msg.content.toLowerCase();
-    const isCorrect = EMOTION_KEYWORDS.positive.some(k => lower.includes(k))
-      || lower.includes('对')
-      || lower.includes('等于')
-      || lower.includes('结果');
+    const isCorrect = isCorrectAnswer(msg.content);
 
     if (isCorrect) {
       count++;
@@ -119,6 +129,7 @@ module.exports = {
   analyzeState,
   detectEmotion,
   countConsecutiveCorrect,
+  isCorrectAnswer,
   deriveEmotion,
   calculateDifficulty,
 };

@@ -5,6 +5,7 @@
       <view class="title-row">
         <text class="title">📊 学习总结</text>
         <text class="subtitle">记录你的每一次进步</text>
+        <text class="update-time" wx:if="{{lastUpdatedText}}">上次更新：{{lastUpdatedText}}</text>
       </view>
       <button class="header-refresh-btn" bindtap="refreshSummary" loading="{{refreshing}}">刷新</button>
     </view>
@@ -28,7 +29,7 @@
       </view>
     </view>
 
-    <view class="stats-grid">
+    <view class="stats-grid" wx:if="{{!empty}}">
       <view class="stat-card">
         <text class="stat-value">{{learningDays}}</text>
         <text class="stat-label">学习天数</text>
@@ -42,52 +43,44 @@
         <text class="stat-label">对话消息</text>
       </view>
       <view class="stat-card">
-        <text class="stat-value">{{topicsCovered.length}}</text>
+        <text class="stat-value">{{topicsCount}}</text>
         <text class="stat-label">知识点</text>
       </view>
     </view>
 
-    <view class="progress-section">
-      <view class="section-title-row" bindtap="toggleTopics">
-        <text class="section-title">📈 知识点掌握情况</text>
-        <view class="toggle-text">
-          <text>{{topicsExpanded ? '收起' : '展开'}}</text>
-          <text class="section-arrow">{{topicsExpanded ? '▼' : '▶'}}</text>
+    <!-- 三个模块入口 -->
+    <view class="entry-list" wx:if="{{!empty}}">
+      <view class="entry-card" hover-class="btn-hover" bindtap="goKnowledge">
+        <view class="entry-icon">
+          <text>📈</text>
         </view>
-      </view>
-      <view class="progress-bars" wx:if="{{topicsExpanded}}">
-        <view wx:for="{{groupedTopics}}" wx:key="grade" class="grade-group">
-          <view class="grade-title">{{item.grade}}</view>
-          <view class="progress-item" wx:for="{{item.topics}}" wx:key="topic" wx:for-item="topic">
-            <view class="progress-header">
-              <text class="progress-name">{{topic.topic}}</text>
-              <text class="progress-level">{{topic.levelDesc}}</text>
-            </view>
-            <view class="progress-bar-bg">
-              <view class="progress-bar-fill" style="width: {{topic.level * 100}}%"></view>
-            </view>
-            <view class="progress-footer">
-              <text class="progress-count">练习 {{topic.practicedCount}} 次</text>
-              <text class="progress-rate">{{Math.round(topic.level * 100)}}%</text>
-            </view>
-          </view>
+        <view class="entry-info">
+          <text class="entry-title">知识点掌握报告</text>
+          <text class="entry-desc">{{knowledgeCount > 0 ? knowledgeCount + ' 个知识点，AI 逐点点评' : '查看每个知识点的掌握情况'}}</text>
         </view>
+        <text class="entry-arrow">›</text>
       </view>
-    </view>
 
-    <view class="suggestions-section" wx:if="{{suggestions.length > 0}}">
-      <view class="section-title">💡 学习建议</view>
-      <view class="suggestions-list">
-        <view class="suggestion-item" wx:for="{{suggestions}}" wx:key="index">
-          <text>{{item}}</text>
+      <view class="entry-card" hover-class="btn-hover" bindtap="goSuggestions">
+        <view class="entry-icon">
+          <text>💡</text>
         </view>
+        <view class="entry-info">
+          <text class="entry-title">学习建议</text>
+          <text class="entry-desc">{{suggestionsCount > 0 ? 'AI 为你定制的 ' + suggestionsCount + ' 条建议' : 'AI 定制专属学习建议'}}</text>
+        </view>
+        <text class="entry-arrow">›</text>
       </view>
-    </view>
 
-    <view class="summary-card">
-      <view class="section-title">🌟 小伴说</view>
-      <view class="summary-content">
-        <text>{{summary}}</text>
+      <view class="entry-card" hover-class="btn-hover" bindtap="goSummaryDetail">
+        <view class="entry-icon">
+          <text>🌟</text>
+        </view>
+        <view class="entry-info">
+          <text class="entry-title">小伴说 · 学习总结</text>
+          <text class="entry-desc">完整回顾你的学习旅程</text>
+        </view>
+        <text class="entry-arrow">›</text>
       </view>
     </view>
 

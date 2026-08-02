@@ -306,6 +306,7 @@
 
 .session-card:active {
   background: var(--bg-input);
+  transform: scale(0.98);
 }
 
 .session-card-top {

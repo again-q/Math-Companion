@@ -34,9 +34,9 @@
        操作按钮
        ============================================================ -->
   <view class="settings-actions">
-    <view class="btn-save {{changed ? 'active' : ''}} {{saveSuccess ? 'success' : ''}}" bindtap="{{changed ? 'savePrompt' : ''}}" hover-class="btn-hover">
+    <view class="btn-save {{changed ? 'active' : ''}} {{saveSuccess ? 'success' : ''}}" bindtap="savePrompt" hover-class="btn-hover">
       <text class="btn-save-icon">✓</text>
-      <text class="btn-save-label">{{saveSuccess ? '保存成功' : (changed ? '保存设置' : '已保存')}}</text>
+      <text class="btn-save-label">{{saveButtonText}}</text>
     </view>
 
     <view class="btn-reset" bindtap="resetPrompt" hover-class="btn-hover">

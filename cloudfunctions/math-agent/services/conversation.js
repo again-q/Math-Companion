@@ -7,9 +7,21 @@
 const memory = require('./memory');
 const strategy = require('./strategy');
 const { callDeepSeek } = require('../lib/deepseek');
-const { buildMessage, getProfile, formatProfile, parseProfileUpdate } = require('./agent');
-const { db } = require('../lib/dbHelper');
-const { buildMemory } = require('./memory-builder');
+const { buildMessage, getProfile, formatProfile, parseProfileUpdate, parseFeedbackUpdate } = require('./agent');
+const { db, _ } = require('../lib/dbHelper');
+
+/**
+ * 从用户消息中识别知识点话题（原设计：topic 驱动知识进度；
+ * 前端未显式传 topic 时按 defaultTopics 兜底识别）
+ */
+function detectTopic(content) {
+  if (!content) return null;
+  const config = require('../config/index');
+  for (const topic of config.defaultTopics) {
+    if (content.includes(topic)) return topic;
+  }
+  return null;
+}
 
 async function handleMessage({ sessionId, content, topic }) {
   console.log(`[math-agent] handleMessage session=${sessionId} len=${content.length}`);
@@ -21,16 +33,19 @@ async function handleMessage({ sessionId, content, topic }) {
     throw new Error('消息内容过长');
   }
 
+  // 原设计：topic 决定会话归属的知识点；前端没传时从消息内容识别
+  const resolvedTopic = topic || detectTopic(content);
+
   let currentSessionId = sessionId;
   if (!currentSessionId) {
-    currentSessionId = await memory.createSession(topic);
+    currentSessionId = await memory.createSession(resolvedTopic);
     console.log(`[math-agent] 创建新会话: ${currentSessionId}`);
   }
 
-  if (topic) {
+  if (resolvedTopic) {
     await db.collection('mt_sessions')
       .where({ sessionId: currentSessionId })
-      .update({ data: { topic } });
+      .update({ data: { topic: resolvedTopic } });
   }
 
   const context = await memory.loadContext(currentSessionId);
@@ -40,39 +55,44 @@ async function handleMessage({ sessionId, content, topic }) {
 
   await memory.saveMessage(currentSessionId, 'user', content);
 
-  const { systemPrompt, userMessage } = await buildMessage(context, content, profile);
+  const { systemPrompt, userMessage } = await buildMessage(context, content, profile, state);
 
   const rawReply = await callDeepSeek({ systemPrompt, userMessage }, { timeout: 25000, maxRetries: 0 });
 
   const { cleanReply, update } = parseProfileUpdate(rawReply);
+  const { cleanReply: finalReply, feedback } = parseFeedbackUpdate(cleanReply);
   const emotion = strategy.deriveEmotion(state);
 
-  await memory.saveMessage(currentSessionId, 'assistant', cleanReply, { emotion, systemPrompt });
+  await memory.saveMessage(currentSessionId, 'assistant', finalReply, { emotion });
 
-  Promise.all([
-    (async () => {
-      if (update) {
-        await updateProfileFromAI(update);
-        console.log('[math-agent] 档案已更新:', JSON.stringify(update));
-      }
-    })(),
-    (async () => {
-      try {
-        await db.collection('mt_profile').where({ isDeleted: _.neq(true) }).limit(1).update({
-          data: { summaryNeedsUpdate: true, updatedAt: db.serverDate() },
-        });
-      } catch (e) {}
-    })(),
-    (async () => {
-      if (topic) {
-        await memory.updateKnowledgeProgress(topic, {
-          correct: state.emotion === 'positive',
-          consecutiveCorrect: state.consecutiveCorrect,
-        });
-      }
-    })(),
-    rebuildMemory(),
-  ]).catch(err => console.error('[math-agent] 异步操作失败:', err));
+  // 原设计：对话后更新档案/标记总结/更新知识进度。
+  // 必须 await 保证云函数返回前执行完成（fire-and-forget 在云函数环境中不保证执行）。
+  // memory 全量重建由定时任务 dailyMemoryRebuild + 总结页刷新触发，不在此阻塞。
+  const tasks = [];
+  if (update) {
+    tasks.push(updateProfileFromAI(update).then(() => {
+      console.log('[math-agent] 档案已更新:', JSON.stringify(update));
+    }));
+  }
+  tasks.push(
+    db.collection('mt_profile').where({ isDeleted: _.neq(true) }).limit(1).update({
+      data: { summaryNeedsUpdate: true, updatedAt: db.serverDate() },
+    }).catch(() => {})
+  );
+  tasks.push(updateStudyStreak());
+  if (feedback && feedback.feedback) {
+    tasks.push(updateFeedback(feedback));
+  }
+  if (resolvedTopic) {
+    tasks.push(
+      memory.updateKnowledgeProgress(resolvedTopic, {
+        // G3 修复：用"答对信号"判断，不再用情绪（情绪积极≠答对，"有趣/简单"会误判）
+        correct: strategy.isCorrectAnswer(content),
+        consecutiveCorrect: state.consecutiveCorrect,
+      }).catch(err => console.error('[math-agent] 更新知识进度失败:', err))
+    );
+  }
+  await Promise.all(tasks).catch(err => console.error('[math-agent] 异步操作失败:', err));
 
   console.log(`[math-agent] 完成 emotion=${emotion}`);
 
@@ -81,6 +101,62 @@ async function handleMessage({ sessionId, content, topic }) {
     sessionId: currentSessionId,
     emotion,
   };
+}
+
+/**
+ * 记录 AI 行为反馈（学生对 AI 表现的评价，写进 agent 长期生效）
+ */
+async function updateFeedback(feedback) {
+  try {
+    const profile = await getProfile();
+    if (!profile || !profile._id) return;
+    const existing = profile.aiFeedback || [];
+    const item = {
+      feedback: String(feedback.feedback || '').slice(0, 100),
+      type: feedback.type || 'criticism',
+      at: new Date(),
+    };
+    if (!item.feedback) return;
+    const next = [...existing, item].slice(-10); // 保留最近 10 条
+    await db.collection('mt_profile').doc(profile._id).update({
+      data: { aiFeedback: next, updatedAt: db.serverDate() },
+    });
+    console.log('[math-agent] AI 行为反馈已记录:', item.feedback);
+  } catch (e) {
+    console.error('[math-agent] 记录 AI 行为反馈失败:', e);
+  }
+}
+
+/**
+ * 更新连续学习天数（streak）：
+ * 今天首次对话时更新 lastStudyDate；昨天学过则 streak+1，中断则重置为 1，今天已学过则保持不变。
+ */
+async function updateStudyStreak() {
+  try {
+    const profile = await getProfile();
+    const today = new Date();
+    const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+
+    let streak = 1;
+    if (profile && profile.lastStudyDate) {
+      const last = new Date(profile.lastStudyDate);
+      const lastStart = new Date(last.getFullYear(), last.getMonth(), last.getDate());
+      const diffDays = Math.round((todayStart - lastStart) / (1000 * 60 * 60 * 24));
+      if (diffDays === 0) {
+        streak = profile.streak || 1; // 今天已学过，保持
+      } else if (diffDays === 1) {
+        streak = (profile.streak || 0) + 1; // 昨天学过，连续 +1
+      } else {
+        streak = 1; // 中断，重置
+      }
+    }
+
+    await db.collection('mt_profile').where({ isDeleted: _.neq(true) }).limit(1).update({
+      data: { lastStudyDate: today, streak, updatedAt: db.serverDate() },
+    });
+  } catch (e) {
+    console.error('[math-agent] 更新连续学习天数失败:', e);
+  }
 }
 
 async function updateProfileFromAI(update) {
@@ -172,20 +248,28 @@ async function updateProfileFromAI(update) {
 async function generateSummary({ scope = 'recent', forceUpdate = false } = {}) {
   console.log(`[math-agent] generateSummary scope=${scope} forceUpdate=${forceUpdate}`);
 
-  // === 异步更新 memory（不阻塞总结生成） ===
-  buildMemory().catch(err => console.error('[math-agent] 异步更新 memory 失败:', err));
+  const _ = db.command;
 
   // === 缓存检查 ===
   const profile = await getProfile();
   const cached = profile?.lastSummary;
   const needsUpdate = profile?.summaryNeedsUpdate !== false || forceUpdate;
 
+  // 结果变量（缓存路径与生成路径共用）
+  let summary = '';
+  let suggestions = [];
+  let knowledgeReport = null;
+  let detailedSuggestions = null;
+  let fromCache = false;
+
   if (cached && !needsUpdate && scope === 'recent') {
     console.log('[math-agent] 使用缓存的总结');
     const sessions = await memory.getRecentSessions(10);
     if (sessions.length > 0) {
-      const stats = await buildStats(sessions);
-      return { ...stats, summary: cached };
+      const stats = await buildStats(sessions, profile);
+      knowledgeReport = profile.lastKnowledgeReport || null;
+      detailedSuggestions = profile.lastDetailedSuggestions || null;
+      return { ...stats, summary: cached, knowledgeReport, detailedSuggestions, lastUpdatedAt: profile?.memoryUpdatedAt || profile?.lastSummaryUpdatedAt || null };
     }
   }
 
@@ -272,14 +356,13 @@ async function generateSummary({ scope = 'recent', forceUpdate = false } = {}) {
   const newTopics = topicsCovered.filter(t => t.level > 0 && t.level < 0.3);
 
   const profileStr = formatProfile(profile);
-  let summary = '';
-  let suggestions = [];
-  let fromCache = false;
 
   if (profile?.lastSummary && profile?.summaryNeedsUpdate === false) {
     fromCache = true;
     summary = profile.lastSummary;
     suggestions = profile.lastSuggestions || [];
+    knowledgeReport = profile.lastKnowledgeReport || null;
+    detailedSuggestions = profile.lastDetailedSuggestions || null;
     console.log('[math-agent] 使用缓存的 AI 总结');
   } else {
     if (profile?.lastSummary) {
@@ -288,12 +371,17 @@ async function generateSummary({ scope = 'recent', forceUpdate = false } = {}) {
           `  - ${t.topic}: ${t.levelDesc}（练习${t.practicedCount}次）`
         ).join('\n');
 
-        const systemPrompt = `你是一个温暖贴心的学习陪伴者「数学小伴」。根据学生档案和学习数据，生成个性化学习总结。
-只返回纯 JSON：{"summary":"总结文字","suggestions":["建议1","建议2"]}
-- summary 引用学生个人信息（名字、薄弱点、兴趣等），自然亲切
-- 必须提到学习天数、消息数、哪些知识点掌握好、哪些需要加强
-- suggestions 2~3条，针对薄弱点和学习状态给建议
-- 语气温暖鼓励，200字以内`;
+        const systemPrompt = `你是一个温暖贴心的学习陪伴者「数学小伴」。根据学生档案和学习数据，生成学习总结。
+
+只返回纯文本，用以下分隔符组织内容，不要 JSON、不要其他文字：
+【总结】
+（300~500字，自然分段，覆盖：学习概况/掌握的知识点/薄弱环节/进步亮点/下一步建议/鼓励的话，引用学生名字、兴趣、学习偏好）
+
+【建议】
+（3条，针对薄弱点和学习风格，每条一行："标题：具体做法和理由"，共 30~60字）
+
+【知识点点评】
+（只点评有练习记录的知识点，每个一行："知识点名：点评"，30~50字，结合练习次数和掌握情况）`;
 
         const userMessage = `## 学生档案
 ${profileStr || '（暂无详细档案）'}
@@ -308,23 +396,34 @@ ${learningTopics.length > 0 ? '\n在学：' + learningTopics.map(t => t.topic).j
 ${newTopics.length > 0 ? '\n薄弱：' + newTopics.map(t => t.topic).join('、') : ''}`;
 
         const timeoutPromise = new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('AI summary timeout')), 8000)
+          setTimeout(() => reject(new Error('AI summary timeout')), 25000)
         );
 
-        const [reply] = await Promise.all([
-          callDeepSeek({ systemPrompt, userMessage }, { timeout: 8000, maxRetries: 0 }),
+        // 用 Promise.race：AI 先完成就用 AI 结果，超时才走兜底（不能用 Promise.all，否则要等 timeoutPromise 反而丢弃 AI 结果）
+        const reply = await Promise.race([
+          callDeepSeek({ systemPrompt, userMessage }, { timeout: 25000, maxRetries: 0 }),
           timeoutPromise
         ]);
 
-        const parsed = JSON.parse(reply);
-        if (parsed.summary) {
-          summary = parsed.summary;
-          suggestions = Array.isArray(parsed.suggestions) ? parsed.suggestions : [];
-          const _ = db.command;
+        // 解析分隔符文本：总结 / 建议 / 知识点点评
+        const report = parseAiReport(reply);
+        if (report.summary) {
+          summary = report.summary;
+          suggestions = [];
+          if (masteredTopics.length > 0) suggestions.push(`🎉 你已经熟练掌握了 ${masteredTopics.length} 个知识点，太棒了！`);
+          if (learningTopics.length > 0) suggestions.push(`📚 正在学习 ${learningTopics.length} 个知识点，继续加油哦~`);
+          if (learningDays >= 7) suggestions.push('⏰ 坚持学习一周啦，保持这个好习惯！');
+          if (totalMessages >= 50) suggestions.push('💬 你和小伴已经聊了很多了，数学思维越来越活跃！');
+          if (profile && profile.streak >= 3) suggestions.push(`🔥 连续学习 ${profile.streak} 天，太自律了！`);
+          // AI 生成的建议与知识点评（解析失败回退程序模板）
+          detailedSuggestions = report.suggestions.length > 0 ? report.suggestions : normalizeDetailedSuggestions(null);
+          knowledgeReport = normalizeKnowledgeReport(report.reviews, topicsCovered);
           await db.collection('mt_profile').where({ isDeleted: _.neq(true) }).limit(1).update({
             data: {
               lastSummary: summary,
               lastSuggestions: suggestions,
+              lastKnowledgeReport: knowledgeReport,
+              lastDetailedSuggestions: detailedSuggestions,
               summaryNeedsUpdate: false,
               lastSummaryUpdatedAt: db.serverDate(),
               updatedAt: db.serverDate(),
@@ -353,6 +452,11 @@ ${newTopics.length > 0 ? `🌱 初识阶段: ${newTopics.map(t => t.topic).join(
         if (learningTopics.length > 0) suggestions.push(`📚 正在学习 ${learningTopics.length} 个知识点，继续加油哦~`);
         if (learningDays >= 7) suggestions.push('⏰ 坚持学习一周啦，保持这个好习惯！');
         if (totalMessages >= 50) suggestions.push('💬 你和小伴已经聊了很多了，数学思维越来越活跃！');
+        // 零压力：只有真正连续（≥3天）才给鼓励，中断绝不提醒
+        if (profile && profile.streak >= 3) suggestions.push(`🔥 连续学习 ${profile.streak} 天，太自律了！`);
+        // 程序生成兜底（AI 失败时）
+        knowledgeReport = normalizeKnowledgeReport(null, topicsCovered);
+        detailedSuggestions = normalizeDetailedSuggestions(null);
       }
     } else {
       const levelDesc = avgLevel < 0.3 ? '刚刚开始' : avgLevel < 0.5 ? '稳步前进中' : avgLevel < 0.7 ? '掌握不错' : avgLevel < 0.9 ? '非常熟练' : '大师级';
@@ -373,6 +477,11 @@ ${newTopics.length > 0 ? `🌱 初识阶段: ${newTopics.map(t => t.topic).join(
       if (learningTopics.length > 0) suggestions.push(`📚 正在学习 ${learningTopics.length} 个知识点，继续加油哦~`);
       if (learningDays >= 7) suggestions.push('⏰ 坚持学习一周啦，保持这个好习惯！');
       if (totalMessages >= 50) suggestions.push('💬 你和小伴已经聊了很多了，数学思维越来越活跃！');
+      // 零压力：只有真正连续（≥3天）才给鼓励，中断绝不提醒
+      if (profile && profile.streak >= 3) suggestions.push(`🔥 连续学习 ${profile.streak} 天，太自律了！`);
+      // 程序生成兜底
+      knowledgeReport = normalizeKnowledgeReport(null, topicsCovered);
+      detailedSuggestions = normalizeDetailedSuggestions(null);
     }
   }
 
@@ -391,6 +500,9 @@ ${newTopics.length > 0 ? `🌱 初识阶段: ${newTopics.map(t => t.topic).join(
     },
     suggestions,
     fromCache,
+    knowledgeReport,
+    detailedSuggestions,
+    lastUpdatedAt: profile?.memoryUpdatedAt || profile?.lastSummaryUpdatedAt || null,
   };
 
   // === 缓存新生成的总结 ===
@@ -399,6 +511,9 @@ ${newTopics.length > 0 ? `🌱 初识阶段: ${newTopics.map(t => t.topic).join(
       await db.collection('mt_profile').where({ isDeleted: _.neq(true) }).limit(1).update({
         data: {
           lastSummary: summary,
+          lastSuggestions: suggestions,
+          lastKnowledgeReport: knowledgeReport,
+          lastDetailedSuggestions: detailedSuggestions,
           summaryNeedsUpdate: false,
           lastSummaryUpdatedAt: db.serverDate(),
           updatedAt: db.serverDate(),
@@ -413,9 +528,105 @@ ${newTopics.length > 0 ? `🌱 初识阶段: ${newTopics.map(t => t.topic).join(
 }
 
 /**
+ * 解析 AI 生成的分隔符文本（总结/建议/知识点点评）
+ * 格式：
+ * 【总结】...【建议】1. 标题：做法...【知识点点评】知识点名：点评
+ */
+function parseAiReport(reply) {
+  const result = { summary: '', suggestions: [], reviews: [] };
+
+  const summaryMatch = reply.match(/【总结】([\s\S]*?)(?=【建议】|【知识点点评】|$)/);
+  const sugMatch = reply.match(/【建议】([\s\S]*?)(?=【知识点点评】|$)/);
+  const revMatch = reply.match(/【知识点点评】([\s\S]*?)$/);
+
+  if (summaryMatch && summaryMatch[1].trim()) {
+    result.summary = summaryMatch[1].trim();
+  }
+
+  if (sugMatch && sugMatch[1].trim()) {
+    const lines = sugMatch[1].split('\n').map(s => s.trim()).filter(Boolean);
+    result.suggestions = lines.map(line => {
+      const clean = line.replace(/^\d+\s*[.、)）]\s*/, '');
+      const idx = clean.search(/[：:]/);
+      if (idx > 0) {
+        return { title: clean.slice(0, idx).slice(0, 50), reason: clean.slice(idx + 1).slice(0, 120), action: '' };
+      }
+      return { title: clean.slice(0, 50), reason: '', action: '' };
+    }).filter(s => s.title);
+  }
+
+  if (revMatch && revMatch[1].trim()) {
+    const lines = revMatch[1].split('\n').map(s => s.trim()).filter(Boolean);
+    for (const line of lines) {
+      const idx = line.indexOf('：');
+      if (idx > 0) {
+        const topic = line.slice(0, idx).trim();
+        const comment = line.slice(idx + 1).trim();
+        if (topic && comment) result.reviews.push({ topic, comment });
+      }
+    }
+  }
+
+  return result;
+}
+
+/**
+ * 规范化知识点报告（AI 生成优先，缺失时程序兜底）
+ * @param {Array|null} aiReport - AI 返回的 knowledgeReport（[{topic, comment, nextStep?}]）
+ * @param {Array} topicsCovered - 知识点列表（含 level/practicedCount 等）
+ */
+function normalizeKnowledgeReport(aiReport, topicsCovered) {
+  const practiced = topicsCovered.filter(t => t.level > 0);
+  return practiced.map(t => {
+    const ai = Array.isArray(aiReport) ? aiReport.find(r => r && r.topic === t.topic) : null;
+    return {
+      topic: t.topic,
+      level: t.level,
+      practicedCount: t.practicedCount,
+      consecutiveCorrect: t.consecutiveCorrect,
+      levelDesc: t.levelDesc,
+      comment: (ai && ai.comment) || programKnowledgeComment(t),
+      nextStep: (ai && ai.nextStep) || programKnowledgeNextStep(t),
+    };
+  });
+}
+
+function programKnowledgeComment(t) {
+  const l = t.level;
+  if (l >= 0.7) return `${t.topic}掌握得不错，练习了 ${t.practicedCount} 次，已达到「${t.levelDesc}」水平，可以考虑挑战综合应用题了。`;
+  if (l >= 0.3) return `${t.topic}正在稳步掌握中，练习了 ${t.practicedCount} 次。继续保持，重点突破易错题型。`;
+  return `${t.topic}还在起步阶段，练习了 ${t.practicedCount} 次，${t.consecutiveCorrect > 0 ? '最近连续答对 ' + t.consecutiveCorrect + ' 次，有好转趋势' : '还需要多练几道巩固基础'}。`;
+}
+
+function programKnowledgeNextStep(t) {
+  const l = t.level;
+  if (l >= 0.7) return '尝试综合应用题，保持手感。';
+  if (l >= 0.3) return '每天练 2-3 道，重点攻克易错题型。';
+  return '先用生活例子理解概念，再做基础题。';
+}
+
+/**
+ * 规范化结构化建议（AI 生成优先，缺失时程序兜底）
+ */
+function normalizeDetailedSuggestions(aiSuggestions) {
+  if (Array.isArray(aiSuggestions) && aiSuggestions.length > 0 && typeof aiSuggestions[0] === 'object' && aiSuggestions[0].title) {
+    return aiSuggestions.map(s => ({
+      title: String(s.title || '建议').slice(0, 50),
+      reason: String(s.reason || '').slice(0, 120),
+      action: String(s.action || '').slice(0, 120),
+    }));
+  }
+  return [
+    { title: '巩固已掌握知识点', reason: '掌握不错的知识点需要定期回顾，才能形成长期记忆', action: '每周抽时间快速过一遍已学内容' },
+    { title: '攻克薄弱环节', reason: '薄弱知识点需要更多针对性练习才能突破', action: '每天安排 2-3 道薄弱知识点的题目' },
+    { title: '保持学习节奏', reason: '规律的学习比突击更有效果', action: '尽量保持隔天学习一次的节奏' },
+  ];
+}
+
+/**
  * 构建统计数据（缓存命中时复用）
  */
-async function buildStats(sessions) {
+async function buildStats(sessions, profile) {
   const totalSessions = sessions.length;
   const totalMessages = sessions.reduce((sum, s) => sum + (s.totalMessages || 0), 0);
 
@@ -450,7 +661,7 @@ async function buildStats(sessions) {
 
   const masteredTopics = topicsCovered.filter(t => t.level >= 0.7);
   const learningTopics = topicsCovered.filter(t => t.level >= 0.3 && t.level < 0.7);
-  const newTopics = topicsCovered.filter(t => t.level < 0.3);
+  const newTopics = topicsCovered.filter(t => t.level > 0 && t.level < 0.3);
 
   const suggestions = [];
   if (masteredTopics.length > 0) {
@@ -464,6 +675,10 @@ async function buildStats(sessions) {
   }
   if (totalMessages >= 50) {
     suggestions.push('💬 你和小伴已经聊了很多了，数学思维越来越活跃！');
+  }
+  // 零压力：只有真正连续（≥3天）才给鼓励，中断绝不提醒
+  if (profile && profile.streak >= 3) {
+    suggestions.push(`🔥 连续学习 ${profile.streak} 天，太自律了！`);
   }
 
   return {

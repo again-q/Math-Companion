@@ -1,0 +1,48 @@
+<view class="report-page">
+  <view class="report-header">
+    <text class="report-header-title">📈 知识点掌握报告</text>
+    <text class="report-header-sub">每个知识点的掌握情况与 AI 点评</text>
+  </view>
+
+  <view class="loading-state" wx:if="{{loading}}">
+    <view class="loading-spinner"></view>
+    <text class="loading-text">加载中...</text>
+  </view>
+
+  <view class="empty-state" wx:elif="{{empty}}">
+    <text class="empty-icon">📭</text>
+    <text class="empty-text">还没有练习过知识点</text>
+    <view class="empty-btn" bindtap="retry">重新加载</view>
+  </view>
+
+  <view class="report-list" wx:else>
+    <view class="knowledge-card" wx:for="{{report}}" wx:key="topic">
+      <view class="knowledge-header">
+        <text class="knowledge-name">{{item.topic}}</text>
+        <text class="knowledge-level" style="background: {{item.levelBg}}; color: {{item.levelColor}};">{{item.levelDesc}}</text>
+      </view>
+
+      <view class="progress-bar-bg">
+        <view class="progress-bar-fill" style="width: {{item.percent}}%;"></view>
+      </view>
+
+      <view class="knowledge-stats">
+        <text class="stat-item">练习 {{item.practicedCount}} 次</text>
+        <text class="stat-item">掌握度 {{item.percent}}%</text>
+        <text class="stat-item">连续答对 {{item.consecutiveCorrect}} 次</text>
+      </view>
+
+      <view class="ai-comment" wx:if="{{item.comment}}">
+        <text class="ai-comment-label">🤖 AI 点评</text>
+        <text class="ai-comment-text">{{item.comment}}</text>
+      </view>
+
+      <view class="ai-next" wx:if="{{item.nextStep}}">
+        <text class="ai-next-label">👉 下一步</text>
+        <text class="ai-next-text">{{item.nextStep}}</text>
+      </view>
+    </view>
+
+    <view class="bottom-space"></view>
+  </view>
+</view>

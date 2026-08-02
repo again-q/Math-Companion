@@ -77,7 +77,7 @@ Page({
   onTouchMove(e) {
     const diffX = e.touches[0].clientX - this._touchStartX;
     if (diffX < 0 && this._touchSessionId) {
-      const translate = Math.max(diffX, -140);
+      const translate = Math.max(diffX, -this.deleteBtnPx());
       const sessionId = this._touchSessionId;
       const sessions = this.data.sessions.map(s => ({
         ...s,
@@ -102,13 +102,22 @@ Page({
     const sessionId = this._touchSessionId;
     const sessions = this.data.sessions.map(s => ({
       ...s,
-      translateX: s.sessionId === sessionId ? (shouldOpen ? -140 : 0) : 0,
+      translateX: s.sessionId === sessionId ? (shouldOpen ? -this.deleteBtnPx() : 0) : 0,
     }));
     
     this.setData({ 
       sessions,
       swipedSessionId: shouldOpen ? sessionId : null,
     });
+  },
+
+  // 删除按钮宽度（140rpx 换算成 px，适配不同屏宽，保证滑动跟手且完整露出）
+  deleteBtnPx() {
+    if (!this._deleteBtnPx) {
+      const windowWidth = (wx.getSystemInfoSync && wx.getSystemInfoSync().windowWidth) || 375;
+      this._deleteBtnPx = Math.round(140 * windowWidth / 750);
+    }
+    return this._deleteBtnPx;
   },
 
   async onDeleteSession(e) {

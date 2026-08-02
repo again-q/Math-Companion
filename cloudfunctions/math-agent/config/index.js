@@ -4,7 +4,9 @@
  */
 const config = {
   deepseek: {
-    apiKey: process.env.DEEPSEEK_API_KEY || 'sk-fce1650c69884aba9b225ce8f910e290',
+    // API Key 只从环境变量读取（云开发控制台 → 云函数 → math-agent → 环境变量配置）。
+    // 禁止硬编码到源码：历史版本曾硬编码并泄露到公开仓库，key 已作废。
+    apiKey: process.env.DEEPSEEK_API_KEY,
     baseUrl: process.env.DEEPSEEK_BASE_URL || 'https://api.deepseek.com',
     model: 'deepseek-chat',
     timeout: 10000,

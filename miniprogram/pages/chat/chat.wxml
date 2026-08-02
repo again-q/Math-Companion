@@ -71,12 +71,12 @@
       <view class="input-box">
         <input class="input" placeholder="输入你想学的内容~" value="{{inputValue}}"
           bindinput="onInputChange" bindconfirm="onSendMessage" confirm-type="send"
-          disabled="{{isLoading}}" bindfocus="onInputFocus" />
+          bindfocus="onInputFocus" />
       </view>
       <view class="input-voice" bindtap="onVoiceInput">
         <text>🎤</text>
       </view>
-      <view class="input-send {{inputValue ? 'active' : ''}}" bindtap="{{inputValue ? 'onSendMessage' : ''}}">
+      <view class="input-send {{inputValue ? 'active' : ''}}" bindtap="onSendMessage">
         <text>➤</text>
       </view>
     </view>

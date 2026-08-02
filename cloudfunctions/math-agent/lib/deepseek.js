@@ -37,7 +37,9 @@ async function callDeepSeek({ systemPrompt, userMessage }, options = {}) {
       { role: 'user', content: userMessage },
     ],
     temperature: 0.7,
-    max_tokens: 1024,
+    max_tokens: 2048,
+    // JSON 模式：强制结构化输出（如 AI 总结生成）
+    ...(options.json ? { response_format: { type: 'json_object' } } : {}),
   });
 
   let lastError = null;
@@ -50,6 +52,11 @@ async function callDeepSeek({ systemPrompt, userMessage }, options = {}) {
       lastError = err;
       console.error(`[math-agent] DeepSeek 调用失败 (尝试 ${attempt + 1}/${actualMaxRetries + 1}):`, err.message);
 
+      // 4xx 是请求本身的问题（如 key 无效、参数错误），重试无意义，直接抛出
+      if (isNonRetryableError(err)) {
+        break;
+      }
+
       if (attempt < actualMaxRetries) {
         const waitMs = 1000 * Math.pow(2, attempt);
         await new Promise(resolve => setTimeout(resolve, waitMs));
@@ -58,6 +65,13 @@ async function callDeepSeek({ systemPrompt, userMessage }, options = {}) {
   }
 
   throw lastError || new Error('DeepSeek API 调用失败');
+}
+
+/**
+ * 判断错误是否不可重试（4xx：key 无效、参数错误、频率限制之外的请求问题）
+ */
+function isNonRetryableError(err) {
+  return /DeepSeek API 返回 (4\d\d)/.test(err && err.message || '');
 }
 
 /**

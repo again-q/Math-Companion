@@ -45,7 +45,7 @@ async function getSession(sessionId) {
   if (!sessionId) return null;
 
   const res = await db.collection('mt_sessions')
-    .where({ sessionId, status: 'active' })
+    .where({ sessionId, status: 'active', isDeleted: _.neq(true) })
     .limit(1)
     .get();
 
@@ -147,24 +147,6 @@ async function renameSession(sessionId, title) {
 }
 
 /**
- * 归档会话
- * @param {string} sessionId - 会话 ID
- * @returns {Promise<boolean>} 是否成功
- */
-async function archiveSession(sessionId) {
-  const res = await db.collection('mt_sessions')
-    .where({ sessionId })
-    .update({
-      data: {
-        status: 'archived',
-        updatedAt: db.serverDate(),
-      },
-    });
-
-  return res.stats.updated > 0;
-}
-
-/**
  * 获取最近活跃会话列表（过滤软删除）
  * @param {number} [limit=20] - 返回数量
  * @returns {Promise<Array>} 会话列表
@@ -204,7 +186,6 @@ async function saveMessage(sessionId, role, content, options = {}) {
   if (role === 'assistant') {
     if (options.mode) msgData.mode = options.mode;
     if (options.emotion) msgData.emotion = options.emotion;
-    if (options.systemPrompt) msgData.systemPrompt = options.systemPrompt;
   }
 
   const res = await db.collection('mt_messages').add({ data: msgData });
@@ -402,7 +383,6 @@ module.exports = {
   createSessionManual,
   softDeleteSession,
   renameSession,
-  archiveSession,
   getRecentSessions,
   // 消息管理
   saveMessage,

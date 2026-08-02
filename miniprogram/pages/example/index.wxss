@@ -48,6 +48,7 @@
   padding: var(--space-xl);
   box-shadow: 0 4rpx 16rpx var(--shadow-sm);
   transition: all 0.3s ease;
+  animation: fadeInUp 0.35s ease both;
 }
 
 .example-card:active {

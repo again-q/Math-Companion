@@ -7,6 +7,7 @@ Page({
     changed: false,
     promptLength: 0,
     saveSuccess: false,
+    saveButtonText: '已保存',
   },
 
   onLoad() {
@@ -36,6 +37,7 @@ Page({
       systemPrompt: value,
       promptLength: value.length,
       changed: value !== this.data.originalPrompt,
+      saveButtonText: value !== this.data.originalPrompt ? '保存设置' : '已保存',
     });
   },
 
@@ -57,12 +59,14 @@ Page({
         originalPrompt: this.data.systemPrompt,
         changed: false,
         saveSuccess: true,
+        saveButtonText: '保存成功',
       });
       setTimeout(() => {
-        this.setData({ saveSuccess: false });
+        this.setData({ saveSuccess: false, saveButtonText: '已保存' });
       }, 1500);
     } catch (e) {
-      this.showToast('保存失败: ' + e.message);
+      const errMsg = (e && (e.message || e.errMsg)) || '未知错误';
+      this.showToast('保存失败: ' + errMsg);
     }
   },
 
@@ -76,6 +80,7 @@ Page({
             systemPrompt: '',
             promptLength: 0,
             changed: true,
+            saveButtonText: '保存设置',
           });
         }
       },

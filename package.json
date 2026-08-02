@@ -1,0 +1,27 @@
+{
+  "name": "miniprogram-3",
+  "version": "1.0.0",
+  "description": "**数学小伴** — 写给我表妹的个人数学 AI 教练，一个温暖、耐心的微信小程序。",
+  "main": "test-api.js",
+  "directories": {
+    "doc": "doc"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/again-q/Math-Companion.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/again-q/Math-Companion/issues"
+  },
+  "homepage": "https://github.com/again-q/Math-Companion#readme",
+  "devDependencies": {
+    "sharp": "^0.35.3"
+  }
+}

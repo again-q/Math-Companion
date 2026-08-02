@@ -1,6 +1,12 @@
 const https = require('https');
 
-const apiKey = 'sk-fce1650c69884aba9b225ce8f910e290';
+const apiKey = process.env.DEEPSEEK_API_KEY || '';
+
+if (!apiKey) {
+  console.error('未配置 DEEPSEEK_API_KEY，请先执行: export DEEPSEEK_API_KEY=sk-你的key');
+  process.exit(1);
+}
+
 const baseUrl = 'https://api.deepseek.com';
 const model = 'deepseek-chat';
 

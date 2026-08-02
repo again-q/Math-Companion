@@ -1,4 +1,5 @@
 const chatService = require('../../services/chat-service');
+const { formatDateTime } = require('../../utils/util');
 
 const TOPIC_GROUPS = {
   '初一上册': ['有理数', '整式的加减', '一元一次方程', '几何图形初步'],
@@ -56,10 +57,10 @@ Page({
     fromCache: false,
     refreshing: false,
     topicsExpanded: true,
-  },
-
-  onLoad() {
-    this.loadSummary();
+    lastUpdatedText: '',
+    topicsCount: 0,
+    knowledgeCount: 0,
+    suggestionsCount: 0,
   },
 
   onShow() {
@@ -71,8 +72,13 @@ Page({
     try {
       const data = await chatService.getSummary(this.data.scope);
       if (data) {
-        const topicsCovered = data.topicsCovered || [];
+        const topicsCovered = (data.topicsCovered || []).map(t => ({
+          ...t,
+          percent: Math.round((t.level || 0) * 100),
+        }));
         const groupedTopics = groupTopicsByGrade(topicsCovered);
+        const knowledgeCount = (data.knowledgeReport && data.knowledgeReport.length) ? data.knowledgeReport.length : topicsCovered.filter(t => t.level > 0).length;
+        const suggestionsCount = (data.detailedSuggestions && data.detailedSuggestions.length) ? data.detailedSuggestions.length : (data.suggestions || []).length;
         this.setData({
           summary: data.summary || '',
           topicsCovered,
@@ -82,8 +88,12 @@ Page({
           totalSessions: data.totalSessions || 0,
           totalMessages: data.totalMessages || 0,
           learningDays: data.learningDays || 0,
+          topicsCount: topicsCovered.length,
+          knowledgeCount,
+          suggestionsCount,
           empty: data.totalSessions === 0,
           fromCache: data.fromCache || false,
+          lastUpdatedText: data.lastUpdatedAt ? formatDateTime(data.lastUpdatedAt) : '',
         });
         this.animateNumbers(data);
       }
@@ -159,6 +169,18 @@ Page({
 
   goToChat() {
     wx.switchTab({ url: '/pages/chat/chat' });
+  },
+
+  goKnowledge() {
+    wx.navigateTo({ url: '/pages/report/knowledge/index' });
+  },
+
+  goSuggestions() {
+    wx.navigateTo({ url: '/pages/report/suggestions/index' });
+  },
+
+  goSummaryDetail() {
+    wx.navigateTo({ url: '/pages/report/summary/index' });
   },
 
   toggleTopics() {

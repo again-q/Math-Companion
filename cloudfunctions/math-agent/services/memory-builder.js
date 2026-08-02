@@ -72,7 +72,8 @@ function buildBasicSection(profile, sessions) {
   lines.push(`- 昵称：${profile?.nickName || '数学小能手'}`);
   lines.push(`- 年级：${profile?.grade || '初三'}`);
   lines.push(`- 学习天数：${learningDays}天`);
-  lines.push(`- 连续学习：${streak}天`);
+  // 零压力：只有真正连续（≥2天）才展示，避免"0天/1天"造成催促感
+  if (streak >= 2) lines.push(`- 连续学习：${streak}天`);
 
   return lines.join('\n');
 }
@@ -247,8 +248,15 @@ async function updateProfileAnalysis(analysis) {
 
 async function getAllKnowledgeProgress() {
   try {
-    const res = await db.collection('mt_knowledge_progress').get();
-    const progressList = res.data;
+    // 分页拉取：云函数端单次 get 上限 100 条，循环取完（上限 1000 防御）
+    const BATCH_SIZE = 100;
+    const MAX_TOTAL = 1000;
+    let progressList = [];
+    for (let skip = 0; skip < MAX_TOTAL; skip += BATCH_SIZE) {
+      const res = await db.collection('mt_knowledge_progress').skip(skip).limit(BATCH_SIZE).get();
+      progressList = progressList.concat(res.data);
+      if (res.data.length < BATCH_SIZE) break;
+    }
 
     const defaultTopics = config.defaultTopics || [];
     const existingTopics = new Set(progressList.map(p => p.topic));

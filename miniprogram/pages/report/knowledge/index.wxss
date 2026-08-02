@@ -1,0 +1,162 @@
+/* ============================================================
+   知识点掌握报告页
+   ============================================================ */
+
+.report-page {
+  min-height: 100vh;
+  background: var(--bg-primary);
+  padding: var(--space-2xl);
+  box-sizing: border-box;
+}
+
+.report-header {
+  margin-bottom: var(--space-2xl);
+}
+
+.report-header-title {
+  display: block;
+  font-size: 40rpx;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 6rpx;
+}
+
+.report-header-sub {
+  display: block;
+  font-size: var(--font-md);
+  color: var(--text-secondary);
+}
+
+.report-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space);
+}
+
+.knowledge-card {
+  background: var(--bg-card);
+  border-radius: var(--radius-xl);
+  padding: var(--space-xl);
+  box-shadow: 0 4rpx 20rpx var(--shadow-sm);
+  animation: fadeInUp 0.35s ease both;
+}
+
+.knowledge-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space);
+}
+
+.knowledge-name {
+  font-size: var(--font-xl);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.knowledge-level {
+  font-size: var(--font-xs);
+  padding: 6rpx 18rpx;
+  border-radius: var(--radius-full);
+  font-weight: 600;
+}
+
+.progress-bar-bg {
+  height: 16rpx;
+  background: var(--bg-input);
+  border-radius: 8rpx;
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--primary) 0%, var(--primary-dark) 100%);
+  border-radius: 8rpx;
+  transition: width 0.5s ease;
+}
+
+.knowledge-stats {
+  display: flex;
+  gap: var(--space-lg);
+  margin-top: var(--space);
+}
+
+.stat-item {
+  font-size: var(--font-xs);
+  color: var(--text-secondary);
+}
+
+.ai-comment,
+.ai-next {
+  margin-top: var(--space-lg);
+  background: var(--bg-input);
+  border-radius: var(--radius);
+  padding: var(--space);
+}
+
+.ai-comment-label,
+.ai-next-label {
+  display: block;
+  font-size: var(--font-xs);
+  font-weight: 600;
+  color: var(--primary-dark);
+  margin-bottom: 6rpx;
+}
+
+.ai-comment-text,
+.ai-next-text {
+  font-size: var(--font-sm);
+  color: var(--text-primary);
+  line-height: 1.7;
+}
+
+/* 加载 / 空状态 */
+.loading-state,
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 160rpx 40rpx;
+}
+
+.loading-spinner {
+  width: 60rpx;
+  height: 60rpx;
+  border: 4rpx solid var(--primary);
+  border-top-color: var(--primary-dark);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 24rpx;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.loading-text {
+  font-size: var(--font-md);
+  color: var(--text-secondary);
+}
+
+.empty-icon {
+  font-size: 100rpx;
+  margin-bottom: var(--space-lg);
+}
+
+.empty-text {
+  font-size: var(--font-md);
+  color: var(--text-secondary);
+}
+
+.empty-btn {
+  margin-top: var(--space-xl);
+  padding: 16rpx 48rpx;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+  border-radius: var(--radius-full);
+  font-size: var(--font-md);
+  color: var(--text-on-primary);
+}
+
+.bottom-space {
+  height: 120rpx;
+}

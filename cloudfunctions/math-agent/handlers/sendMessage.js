@@ -41,7 +41,7 @@ async function sendMessage(data, context) {
       return { code: 500, error: '数据库集合不存在，请在云开发控制台创建 mt_sessions/mt_messages/mt_knowledge_progress' };
     }
 
-    return { code: 500, error: '小伴有点累了，稍后再试~ 错误: ' + err.message };
+    return { code: 500, error: '小伴有点累了，稍后再试~ 错误: ' + ((err && (err.message || err.errMsg)) || '未知错误') };
   }
 }
 

@@ -162,9 +162,6 @@ Page({
 
     this.setData({ isLoading: true });
 
-    // 保存当前会话到本地缓存
-    this.saveBackup();
-
     try {
       const msgResult = await chatService.getMessages(targetId);
 
@@ -255,7 +252,11 @@ Page({
 
   async onSendMessage() {
     const content = this.data.inputValue.trim();
-    if (!content || this.data.isLoading) return;
+    if (!content) return;
+    if (this.data.isLoading) {
+      this.showToast('小伴还在思考中~');
+      return;
+    }
     
     wx.vibrateShort({ type: 'light' });
 
@@ -377,9 +378,9 @@ Page({
 
         msgs[lastMsgIndex] = { ...msgs[lastMsgIndex], content: displayText };
 
+        // 打字机期间不设置 lastMsgId：避免强制滚动打断用户上翻阅读
         this.setData({
           messages: [...msgs],
-          lastMsgId: lastMsg.msgId,
         });
 
         const speed = totalLength > 500 ? 25 : (totalLength > 200 ? 35 : 45);
@@ -430,24 +431,6 @@ Page({
   },
 
   // ============================================================
-  // 本地缓存
-  // ============================================================
-
-  saveBackup() {
-    if (this.data.messages.length === 0) return;
-
-    try {
-      wx.setStorageSync('chat_backup', {
-        sessionId: this.data.sessionId,
-        messages: this.data.messages.slice(-50),
-        savedAt: Date.now(),
-      });
-    } catch (e) {
-      console.warn('[chat] 缓存保存失败:', e);
-    }
-  },
-
-  // ============================================================
   // 滚动 / Toast
   // ============================================================
 
@@ -461,14 +444,6 @@ Page({
     this.setData({
       showScrollToBottom: distanceToBottom > 300,
     });
-  },
-
-  onHide() {
-    this.saveBackup();
-  },
-
-  onUnload() {
-    this.saveBackup();
   },
 
   showToast(text) {

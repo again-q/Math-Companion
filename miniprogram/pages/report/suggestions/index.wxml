@@ -1,0 +1,33 @@
+<view class="report-page">
+  <view class="report-header">
+    <text class="report-header-title">💡 学习建议</text>
+    <text class="report-header-sub">AI 根据你的学习情况定制的建议</text>
+  </view>
+
+  <view class="loading-state" wx:if="{{loading}}">
+    <view class="loading-spinner"></view>
+    <text class="loading-text">加载中...</text>
+  </view>
+
+  <view class="empty-state" wx:elif="{{empty}}">
+    <text class="empty-icon">📭</text>
+    <text class="empty-text">还没有学习记录，先开始学习吧</text>
+    <view class="empty-btn" bindtap="retry">重新加载</view>
+  </view>
+
+  <view class="suggestion-list" wx:else>
+    <view class="suggestion-card" wx:for="{{suggestions}}" wx:key="index">
+      <view class="suggestion-title-row">
+        <text class="suggestion-index">{{index + 1}}</text>
+        <text class="suggestion-title">{{item.title}}</text>
+      </view>
+      <text class="suggestion-reason" wx:if="{{item.reason}}">{{item.reason}}</text>
+      <view class="suggestion-action" wx:if="{{item.action}}">
+        <text class="suggestion-action-label">做法</text>
+        <text class="suggestion-action-text">{{item.action}}</text>
+      </view>
+    </view>
+
+    <view class="bottom-space"></view>
+  </view>
+</view>

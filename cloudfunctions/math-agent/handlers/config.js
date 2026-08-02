@@ -17,10 +17,14 @@ async function getConfig() {
 
 /**
  * 保存配置
+ * 原设计：systemPrompt 留空 = 使用默认人设（agent.js 里 getCustomPrompt 为空时回退默认）
  */
 async function setConfig(data) {
-  if (!data || !data.systemPrompt) {
-    return { code: 400, error: '提示词不能为空' };
+  if (!data || typeof data.systemPrompt !== 'string') {
+    return { code: 400, error: '参数不完整' };
+  }
+  if (data.systemPrompt.length > 5000) {
+    return { code: 400, error: '提示词过长（最多 5000 字）' };
   }
   try {
     const existing = await db.collection('mt_config').where({ key: 'systemPrompt' }).limit(1).get();
@@ -35,7 +39,7 @@ async function setConfig(data) {
     }
     return { code: 0, message: '保存成功' };
   } catch (e) {
-    return { code: 500, error: '保存失败: ' + e.message };
+    return { code: 500, error: '保存失败: ' + ((e && (e.message || e.errMsg)) || '未知错误') };
   }
 }
 

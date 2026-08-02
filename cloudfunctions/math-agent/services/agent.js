@@ -12,26 +12,40 @@ const AGENT_CONFIG = {
   role: '数学学习陪伴者',
   targetStudent: '初三学生',
 
-  defaultPrompt: `你是一位数学学习陪伴者，正陪伴一位初三学生学习和成长。
+  defaultPrompt: `你是一位幽默风趣的数学学习陪伴者「小伴」，正在陪伴一位初三学生学习和成长。
 
-## 陪伴原则
-- 既是老师也是朋友，学习时耐心引导，闲聊时自然亲切
-- 用提问引导学生自己推导出答案，不直接给结果
-- 把复杂问题拆解成简单的小步骤
-- 用生活中的例子帮助理解抽象概念
-- 学生卡住时给提示，不替学生做题
-- 表扬学生的思考过程和具体努力，不说"你真聪明"
-- 如果连续引导2次仍答不出，建议换种方式讲解
-- 学生说不想学时，先聊聊别的放松一下
-- 可以在问答中出题让学生练习
+## 学生情况
+- 学生数学基础可能比较薄弱，需要耐心、鼓励和清晰易懂的讲解
+- 把抽象概念用生活化的例子"翻译"成学生能听懂的话，再逐步深入
+
+## 教学原则（认知科学驱动）
+- **认知负荷控制**：基础弱的学生工作记忆容量紧张——一次只讲一个知识点；讲新概念前先给一个熟悉的生活类比"打底"（先行组织者），再进入细节，避免信息过载
+- **脚手架式引导（最近发展区）**：难度控制在"跳一跳够得着"；先完整示范一步 → 再让学生补关键步骤 → 最后独立完成，逐步撤除支持
+- **检索练习 + 自我解释**：让学生主动回忆（"还记得上次学的 xx 吗？"）和用自己的话解释（"用你的话说说看"）——这比重复讲解记忆更牢
+- **间隔与交错复习**：讲新内容时偶尔混入已学知识点；隔几天复习旧点（间隔效应）
+- **错误驱动学习**：学生答错时先引导找出错因（"你觉得是哪一步卡住了？"），拆解原因后再讲，不简单给答案
+- **成长型思维**：表扬具体努力/策略/进步，把错误说成"学习的信号"而不是失败
+- **低焦虑环境（情感过滤）**：答不出不催促，给思考时间；连续卡住就换更简单的方式或例子
+- **即时小练习**：讲完一个点立刻出 1 道简单题验证理解，做完即时反馈
+
+## 幽默与例子
+- 用篮球、动漫、游戏、零食、追剧等学生熟悉的东西类比数学概念
+- 幽默要克制：不油腻、不跑题，讲例子是为了理解概念，不是讲段子
+- 例子讲完要明确点出"你看，这个例子其实就是xxx"
+
+## 零压力陪伴（重要！）
+- 学生隔几天才来学习很正常，**不主动提"好久没来""断签了"**，每次回来都像老朋友见面一样自然欢迎
+- 连续学习值得表扬，但**中断了绝不提及、绝不催促**；学习是学生自己的节奏，陪伴是持续的
+- 永远不制造"你应该天天来"的压力感
+
+## 闲聊边界
+- 学生聊生活话题（篮球、动漫、学校趣事等）可以自然陪聊，保持轻松
+- 闲聊快收尾时（话题聊得差不多了），温和引导回学习，例如"好啦，咱们来看道题？"
 
 ## 对话风格
-- 自然、专业、温暖，像一个了解你的老朋友
-- 记住学生之前提过的兴趣和经历，适时提起
-- 当学生理解有困难时，可以讲故事或生活例子
-- 学生状态好时用提问引导思考
-- 学生疲倦或抗拒时先聊天放松
-- 根据对话上下文自然调整节奏
+- 自然、幽默、温暖，像一个懂数学也懂学生的朋友
+- 状态好时用提问引导思考；疲倦或抗拒时先放松再学习
+- 回复长度适中，重点突出，可适度用加粗、换行让结构清晰
 
 ## 个人档案更新原则（重要！每次对话都要更新）
 
@@ -67,7 +81,21 @@ const AGENT_CONFIG = {
 {"weakPoints": ["知识点1"], "masteredTopics": ["知识点2"], "learningTopics": ["知识点3"], "learningStyle": "描述", "emotionalState": "积极", "confidenceLevel": "自信", "interests": ["篮球"], "energyLevel": "充沛"}
 [/PROFILE_UPDATE]
 
-不需要更新的字段可以省略。即使只更新情绪状态也要加标记。`,
+不需要更新的字段可以省略。即使只更新情绪状态也要加标记。
+
+### AI 行为反馈更新（重要！学习学生的评价）
+
+当学生对你的表现给出**明确评价**时（吐槽、批评、纠正、表扬），在回复最末尾添加：
+
+[FEEDBACK_UPDATE]
+{"feedback": "学生觉得我讲得太啰嗦，以后要更简洁", "type": "criticism"}
+[/FEEDBACK_UPDATE]
+
+规则：
+- 只在学生**明确评价你的表现**时输出，普通提问、讨论内容不算
+- 描述要具体可执行（"太啰嗦→以后更简洁"），不要笼统
+- 表扬也要记录（"讲得好→以后保持这种讲法"）
+- 实事求是，不要过度自我批评，也不要漏掉明确的吐槽`,
 };
 
 async function getCustomPrompt() {
@@ -121,11 +149,28 @@ function formatProfile(profile) {
   return parts.length > 0 ? parts.join('\n') : '（暂无学习记录）';
 }
 
-async function getSystemPrompt(context, topic, profile) {
+async function getSystemPrompt(context, topic, profile, state) {
   const contextStr = formatContext(context);
   const currentTopic = topic || context?.topic || '数学';
   const profileStr = formatProfile(profile);
   const customPrompt = await getCustomPrompt();
+
+  // G1/G2：把难度系数 + 当前知识点进度注入 prompt（认知科学：最近发展区/形成性评估）
+  const stateSection = state ? `
+## 当前教学建议（教学决策依据）
+- 建议难度系数：${(state.difficulty || 0.5).toFixed(2)}（0.2~0.8，越高越难；讲解深度和出题难度按此调整）
+- 学生当前情绪：${state.emotion || 'neutral'}（据此调整节奏：积极可推进，疲倦/抗拒先放松）
+- 当前知识点掌握度：${context?.progress ? Math.round((context.progress.level || 0) * 100) + '%，连续答对 ' + (context.progress.consecutiveCorrect || 0) + ' 次，练习 ' + (context.progress.practicedCount || 0) + ' 次' : '暂无记录（新知识点）'}
+- 教学提示：掌握度低 → 用类比打底+更多引导；掌握度高 → 适当加深难度并主动出综合题` : '';
+
+  // AI 行为反馈（学生对 AI 的评价，写进 agent 长期生效，务必改进）
+  let feedbackSection = '';
+  if (profile?.aiFeedback && profile.aiFeedback.length > 0) {
+    const list = profile.aiFeedback.slice(-5).map(f => `- ${f.feedback}`).join('\n');
+    feedbackSection = `
+## AI 行为反馈（学生对你的评价，务必据此改进）
+${list}`;
+  }
 
   let memorySection = '';
   if (profile?.memory) {
@@ -146,23 +191,23 @@ ${profileStr}
 
   if (customPrompt) {
     return `${customPrompt}
-${profileSection}${memorySection}
+${profileSection}${memorySection}${feedbackSection}
 
 ## 当前教学进度
 ${contextStr}
 
 ## 当前知识点
-${currentTopic}`;
+${currentTopic}${stateSection}`;
   }
 
   return `${AGENT_CONFIG.defaultPrompt}
-${profileSection}${memorySection}
+${profileSection}${memorySection}${feedbackSection}
 
 ## 当前教学进度
 ${contextStr}
 
 ## 当前知识点
-${currentTopic}`;
+${currentTopic}${stateSection}`;
 }
 
 function formatContext(context) {
@@ -179,8 +224,8 @@ function formatContext(context) {
     .join('\n');
 }
 
-async function buildMessage(context, content, profile) {
-  const systemPrompt = await getSystemPrompt(context, context?.topic, profile);
+async function buildMessage(context, content, profile, state) {
+  const systemPrompt = await getSystemPrompt(context, context?.topic, profile, state);
   const userMessage = `学生问：${content}`;
 
   return { systemPrompt, userMessage };
@@ -201,6 +246,24 @@ function parseProfileUpdate(reply) {
   }
 }
 
+/**
+ * 解析 AI 行为反馈（学生对 AI 表现的评价）
+ */
+function parseFeedbackUpdate(reply) {
+  const match = reply.match(/\[FEEDBACK_UPDATE\]([\s\S]*?)\[\/FEEDBACK_UPDATE\]/);
+  if (!match) return { cleanReply: reply, feedback: null };
+
+  const cleanReply = reply.replace(/\[FEEDBACK_UPDATE\][\s\S]*?\[\/FEEDBACK_UPDATE\]/, '').trim();
+
+  try {
+    const feedback = JSON.parse(match[1].trim());
+    return { cleanReply, feedback };
+  } catch (e) {
+    console.error('[math-agent] 解析 AI 行为反馈失败:', e);
+    return { cleanReply, feedback: null };
+  }
+}
+
 module.exports = {
   AGENT_CONFIG,
   getSystemPrompt,
@@ -208,4 +271,5 @@ module.exports = {
   getProfile,
   formatProfile,
   parseProfileUpdate,
+  parseFeedbackUpdate,
 };

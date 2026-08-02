@@ -28,7 +28,7 @@ function sendMessage(sessionId, content, topic) {
         },
       },
       success: (res) => {
-        const result = res.result;
+        const result = res.result || {};
 
         if (result.code === 0) {
           resolve(result.data);
@@ -60,7 +60,7 @@ function getSummary(scope = 'recent') {
         data: { scope },
       },
       success: (res) => {
-        const result = res.result;
+        const result = res.result || {};
 
         if (result.code === 0) {
           resolve(result.data);
@@ -94,7 +94,7 @@ function getMessages(sessionId, page = 1, pageSize = 50) {
         data: { sessionId, page, pageSize },
       },
       success: (res) => {
-        const result = res.result;
+        const result = res.result || {};
         if (result.code === 0) {
           resolve(result.data);
         } else {
@@ -119,7 +119,7 @@ function getSessions() {
       name: FUNCTION_NAME,
       data: { type: 'getSessions' },
       success: (res) => {
-        const result = res.result;
+        const result = res.result || {};
         if (result.code === 0) {
           resolve(result.data || []);
         } else {
@@ -148,7 +148,7 @@ function createSession(title) {
         data: { title: title || null },
       },
       success: (res) => {
-        const result = res.result;
+        const result = res.result || {};
         if (result.code === 0) {
           resolve(result.data);
         } else {
@@ -177,7 +177,7 @@ function deleteSession(sessionId) {
         data: { sessionId },
       },
       success: (res) => {
-        const result = res.result;
+        const result = res.result || {};
         if (result.code === 0) {
           resolve(result.data);
         } else {
@@ -207,7 +207,7 @@ function renameSession(sessionId, title) {
         data: { sessionId, title },
       },
       success: (res) => {
-        const result = res.result;
+        const result = res.result || {};
         if (result.code === 0) {
           resolve(result.data);
         } else {
@@ -228,7 +228,7 @@ function getProfile() {
       name: FUNCTION_NAME,
       data: { type: 'getProfile' },
       success: (res) => {
-        const result = res.result;
+        const result = res.result || {};
         if (result.code === 0) {
           resolve(result.data);
         } else {
@@ -252,7 +252,7 @@ function updateProfile(data) {
         data,
       },
       success: (res) => {
-        const result = res.result;
+        const result = res.result || {};
         if (result.code === 0) {
           resolve(result.data);
         } else {

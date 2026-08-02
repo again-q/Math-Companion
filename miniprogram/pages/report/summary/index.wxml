@@ -1,0 +1,22 @@
+<view class="report-page">
+  <view class="report-header">
+    <text class="report-header-title">🌟 小伴说 · 学习总结</text>
+    <text class="report-header-sub" wx:if="{{updatedText}}">生成于 {{updatedText}}</text>
+  </view>
+
+  <view class="loading-state" wx:if="{{loading}}">
+    <view class="loading-spinner"></view>
+    <text class="loading-text">加载中...</text>
+  </view>
+
+  <view class="empty-state" wx:elif="{{empty}}">
+    <text class="empty-icon">📭</text>
+    <text class="empty-text">还没有学习总结</text>
+    <view class="empty-btn" bindtap="retry">重新加载</view>
+  </view>
+
+  <view class="summary-content" wx:else>
+    <text class="summary-text" user-select>{{summary}}</text>
+    <view class="bottom-space"></view>
+  </view>
+</view>

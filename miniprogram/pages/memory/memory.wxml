@@ -20,7 +20,7 @@
        加载状态
        ============================================================ -->
   <view class="loading-state" wx:if="{{loading}}">
-    <view class="loading-skeleton" wx:for="{{3}}" wx:key="index">
+    <view class="loading-skeleton" wx:for="{{3}}" wx:key="*this">
       <view class="skeleton-line skeleton-title"></view>
       <view class="skeleton-line skeleton-meta"></view>
     </view>
@@ -46,6 +46,7 @@
       wx:for="{{sessions}}" wx:key="sessionId"
       data-id="{{item.sessionId}}"
       bindtouchstart="onTouchStart"
+      bindtouchmove="onTouchMove"
       bindtouchend="onTouchEnd">
 
       <!-- 删除按钮（在卡片下方） -->
@@ -59,7 +60,7 @@
       <!-- 会话卡片 -->
       <view class="session-card"
         bindtap="viewSession" data-id="{{item.sessionId}}"
-        style="transform: translateX({{item.translateX || 0}}rpx);">
+        style="transform: translateX({{item.translateX || 0}}px);">
         <view class="session-card-top">
           <view class="session-avatar">
             <text>💬</text>
@@ -74,7 +75,7 @@
           </view>
         </view>
         <view class="session-card-actions">
-          <view class="session-rename-btn" bindtap="onRenameTap" catchtap="onRenameTap" data-id="{{item.sessionId}}" hover-class="btn-hover">
+          <view class="session-rename-btn" catchtap="onRenameTap" data-id="{{item.sessionId}}" hover-class="btn-hover">
             <text>✏️</text>
           </view>
         </view>
