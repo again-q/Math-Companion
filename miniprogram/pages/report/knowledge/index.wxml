@@ -15,12 +15,12 @@
     <view class="empty-btn" bindtap="retry">重新加载</view>
   </view>
 
-  <view class="recommend-bar" wx:if="{{recommendTopic && !loading && !empty}}">
+  <view class="recommend-bar" wx:elif="{{recommendTopic}}">
     <text class="recommend-icon">🎯</text>
     <text class="recommend-text">建议先学：{{recommendTopic}}</text>
   </view>
 
-  <view class="map-list" wx:elif="{{!loading && !empty}}">
+  <view class="map-list" wx:else>
     <view class="grade-group" wx:for="{{groups}}" wx:key="grade" wx:for-item="group">
       <view class="grade-header">
         <text class="grade-name">{{group.grade}}</text>
