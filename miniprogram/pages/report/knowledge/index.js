@@ -65,9 +65,7 @@ Page({
           unitStatus = '学习中';
           unitClass = 'mid';
         }
-        // 单元主按钮：名字随状态变化（未学习→开始测试 / 学习中→开始学习 / 已掌握→复习）
-        const mainBtnText = unitStatus === '未学习' ? '🎯 开始测试' : unitStatus === '学习中' ? '📖 开始学习' : '🔄 复习';
-        return { ...g, topics, practicedCount, unitStatus, unitClass, mainBtnText };
+        return { ...g, topics, practicedCount, unitStatus, unitClass };
       });
 
       // 单元排序：未学习 > 学习中 > 已掌握（优先弹没学过的和掌握度低的）
@@ -102,49 +100,32 @@ Page({
     this.load();
   },
 
-  // 开始学习某个知识点：跳到对话页并自动发起学习
-  onStartStudy(e) {
+  // 知识点行主按钮：未学习→开始测试（摸底）；已学习→继续学习
+  onTopicMain(e) {
     const topic = e.currentTarget.dataset.topic;
-    wx.setStorageSync('study_topic', topic);
-    // 分包页跳 tab 用 reLaunch（switchTab 在分包+tab 组合下偶发 webviewId 路由 bug）
-    wx.reLaunch({ url: '/pages/chat/chat' });
-  },
-
-  // 单元主按钮：未学习→摸底测试；学习中/已掌握→跳该单元第一个未掌握知识点开始学习
-  onUnitMain(e) {
-    const unit = e.currentTarget.dataset.unit;
-    const group = this.data.groups.find(g => g.grade === unit);
-    if (!group) return;
-
-    if (group.unitStatus === '未学习') {
-      this.onTestUnit(e);
-      return;
-    }
-    // 学习中/已掌握：跳第一个未掌握（level<0.5）的知识点，全掌握则跳第一个
-    const target = group.topics.find(t => t.level < 0.5) || group.topics[0];
-    if (!target) return;
-    wx.setStorageSync('study_topic', target.topic);
-    wx.reLaunch({ url: '/pages/chat/chat' });
-  },
-
-  // 单元水平测试：先拉取教材参考材料，再跳对话让 AI 测试
-  async onTestUnit(e) {
-    const unit = e.currentTarget.dataset.unit;
-    wx.showLoading({ title: '准备测试...', mask: true });
-    try {
-      const result = await chatService.getUnitMaterial(unit);
-      const material = (result && result.material) || '';
-      wx.setStorageSync('unit_test', unit);
-      wx.setStorageSync('test_material', material);
-      wx.hideLoading();
+    const level = Number(e.currentTarget.dataset.level || 0);
+    if (level === 0) {
+      this.startTopicTest(topic);
+    } else {
+      wx.setStorageSync('study_topic', topic);
       wx.reLaunch({ url: '/pages/chat/chat' });
+    }
+  },
+
+  // 未学习知识点：先摸底测试（搜教材材料 → 跳对话自动发起摸底）
+  async startTopicTest(topic) {
+    wx.showLoading({ title: '准备测试...', mask: true });
+    let material = '';
+    try {
+      const result = await chatService.getUnitMaterial(topic);
+      material = (result && result.material) || '';
     } catch (err) {
       console.error('[knowledge] 获取测试材料失败:', err);
-      wx.hideLoading();
-      // 失败也允许测试（AI 用自带知识）
-      wx.setStorageSync('unit_test', unit);
-      wx.setStorageSync('test_material', '');
-      wx.reLaunch({ url: '/pages/chat/chat' });
     }
+    wx.hideLoading();
+    wx.setStorageSync('unit_test', topic);
+    wx.setStorageSync('test_material', material);
+    wx.reLaunch({ url: '/pages/chat/chat' });
   },
+
 });

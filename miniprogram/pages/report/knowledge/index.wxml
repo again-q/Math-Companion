@@ -23,10 +23,6 @@
         <view class="grade-right">
           <text class="unit-status {{group.unitClass}}">{{group.unitStatus}}</text>
           <text class="grade-count">{{group.practicedCount}}/{{group.topics.length}} 已学</text>
-          <!-- 单元主按钮：名字随状态变（未学习→开始测试 / 学习中→开始学习 / 已掌握→复习） -->
-          <view class="unit-test-btn" hover-class="btn-hover" bindtap="onUnitMain" data-unit="{{group.grade}}">
-            <text class="unit-test-text">{{group.mainBtnText}}</text>
-          </view>
         </view>
       </view>
 
@@ -36,8 +32,8 @@
             <text class="topic-name">{{item.topic}}</text>
             <text class="topic-level {{item.levelClass}}">{{item.levelDesc}}</text>
           </view>
-          <view class="topic-start" hover-class="btn-hover" bindtap="onStartStudy" data-topic="{{item.topic}}">
-            <text class="topic-start-text">{{item.level > 0 ? '继续学习' : '开始学习'}}</text>
+          <view class="topic-start" hover-class="btn-hover" bindtap="onTopicMain" data-topic="{{item.topic}}" data-level="{{item.level}}">
+            <text class="topic-start-text">{{item.level > 0 ? '继续学习' : '开始测试'}}</text>
           </view>
         </view>
 
