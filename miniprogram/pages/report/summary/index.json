@@ -2,5 +2,9 @@
   "navigationBarTitleText": "小伴说 · 学习总结",
   "navigationBarBackgroundColor": "#FFB5C2",
   "navigationBarTextStyle": "white",
-  "backgroundColor": "#FFF0F3"
+  "backgroundColor": "#FFF0F3",
+  "usingComponents": {
+    "towxml": "/towxml/towxml",
+    "decode": "/towxml/decode"
+  }
 }

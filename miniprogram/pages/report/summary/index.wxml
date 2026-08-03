@@ -16,7 +16,10 @@
   </view>
 
   <view class="summary-content" wx:else>
-    <text class="summary-text" user-select>{{summary}}</text>
+    <!-- markdown 渲染（towxml） -->
+    <towxml wx:if="{{article}}" nodes="{{article}}" />
+    <!-- 解析失败兜底：纯文本 -->
+    <text class="summary-text" wx:else user-select>{{summary}}</text>
     <view class="bottom-space"></view>
   </view>
 </view>

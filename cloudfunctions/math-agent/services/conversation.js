@@ -373,15 +373,25 @@ async function generateSummary({ scope = 'recent', forceUpdate = false } = {}) {
 
         const systemPrompt = `你是一个温暖贴心的学习陪伴者「数学小伴」。根据学生档案和学习数据，生成学习总结。
 
-只返回纯文本，用以下分隔符组织内容，不要 JSON、不要其他文字：
+只返回纯文本 Markdown 格式，不要 JSON，不要代码块围栏：
 【总结】
-（300~500字，自然分段，覆盖：学习概况/掌握的知识点/薄弱环节/进步亮点/下一步建议/鼓励的话，引用学生名字、兴趣、学习偏好）
+用 Markdown 组织，包含以下小节（用 ## 标题分隔，列表用 - 或 1.，关键处用 **加粗**）：
+## 📅 学习概况（1~2句：天数/次数/消息数/整体状态）
+## ✅ 掌握的知识点（列表，每个知识点1句）
+## ⚠️ 薄弱环节（列表，说明原因和解决方向）
+## 🎯 下一步计划（列表，2~3条具体做法）
+## 💪 小伴的话（1~2句鼓励，引用名字和兴趣）
+总 300~450字，语气温暖。
+
+数学公式一律用 Unicode 数学符号（如 x²、±、√、≥、π、≠、·），不要用 LaTeX 标记（\\( \\)、$ $、\\\\frac 等）。
 
 【建议】
-（3条，针对薄弱点和学习风格，每条一行："标题：具体做法和理由"，共 30~60字）
+（3条，Markdown 无序列表，每条一行）
+- **标题**：简短做法（20~40字）
 
 【知识点点评】
-（只点评有练习记录的知识点，每个一行："知识点名：点评"，30~50字，结合练习次数和掌握情况）`;
+（只点评有练习记录的知识点，Markdown 无序列表，每个一行）
+- **知识点名**：点评（20~40字，结合练习次数和掌握情况）`;
 
         const userMessage = `## 学生档案
 ${profileStr || '（暂无详细档案）'}
@@ -541,12 +551,24 @@ function parseAiReport(reply) {
 
   if (summaryMatch && summaryMatch[1].trim()) {
     result.summary = summaryMatch[1].trim();
+  } else {
+    // 回退：AI 可能没输出【总结】标记，取主体内容（去掉其他分隔符段）
+    result.summary = reply
+      .replace(/【建议】[\s\S]*$/, '')
+      .replace(/【知识点点评】[\s\S]*$/, '')
+      .replace(/【总结】/, '')
+      .trim();
   }
 
   if (sugMatch && sugMatch[1].trim()) {
     const lines = sugMatch[1].split('\n').map(s => s.trim()).filter(Boolean);
     result.suggestions = lines.map(line => {
-      const clean = line.replace(/^\d+\s*[.、)）]\s*/, '');
+      // 清理 markdown 符号：- **标题**：做法 → 标题：做法
+      const clean = line
+        .replace(/^[-*+]\s+/, '')
+        .replace(/^\d+\s*[.、)）]\s*/, '')
+        .replace(/\*\*/g, '')
+        .trim();
       const idx = clean.search(/[：:]/);
       if (idx > 0) {
         return { title: clean.slice(0, idx).slice(0, 50), reason: clean.slice(idx + 1).slice(0, 120), action: '' };
@@ -558,10 +580,11 @@ function parseAiReport(reply) {
   if (revMatch && revMatch[1].trim()) {
     const lines = revMatch[1].split('\n').map(s => s.trim()).filter(Boolean);
     for (const line of lines) {
-      const idx = line.indexOf('：');
+      const clean = line.replace(/^[-*+]\s+/, '').replace(/\*\*/g, '').trim();
+      const idx = clean.indexOf('：');
       if (idx > 0) {
-        const topic = line.slice(0, idx).trim();
-        const comment = line.slice(idx + 1).trim();
+        const topic = clean.slice(0, idx).trim();
+        const comment = clean.slice(idx + 1).trim();
         if (topic && comment) result.reviews.push({ topic, comment });
       }
     }

@@ -5,10 +5,17 @@
     "pages/summary/summary",
     "pages/settings/settings",
     "pages/index/index",
-    "pages/example/index",
-    "pages/report/knowledge/index",
-    "pages/report/suggestions/index",
-    "pages/report/summary/index"
+    "pages/example/index"
+  ],
+  "subpackages": [
+    {
+      "root": "pages/report",
+      "pages": [
+        "knowledge/index",
+        "suggestions/index",
+        "summary/index"
+      ]
+    }
   ],
   "window": {
     "backgroundColor": "#FFF0F3",
