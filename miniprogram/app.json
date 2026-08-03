@@ -5,7 +5,6 @@
     "pages/memory/memory",
     "pages/summary/summary",
     "pages/settings/settings",
-    "pages/index/index",
     "pages/example/index"
   ],
   "subpackages": [
