@@ -19,7 +19,7 @@ const config = require('../config/index');
  * @param {number} [options.maxRetries] - 最大重试次数
  * @returns {Promise<string>} AI 回复文本
  */
-async function callDeepSeek({ systemPrompt, userMessage }, options = {}) {
+async function callDeepSeek({ systemPrompt, userMessage, history }, options = {}) {
   const { apiKey, baseUrl, model, timeout, maxRetries } = config.deepseek;
   const actualTimeout = options.timeout || timeout;
   const actualMaxRetries = options.maxRetries ?? maxRetries;
@@ -35,7 +35,7 @@ async function callDeepSeek({ systemPrompt, userMessage }, options = {}) {
     messages: [
       { role: 'system', content: systemPrompt },
       // 完整对话历史（API 原生多轮上下文，不人工截断）
-      ...(Array.isArray(options.history) ? options.history : []),
+      ...(Array.isArray(history) ? history : []),
       { role: 'user', content: userMessage },
     ],
     temperature: 0.7,
