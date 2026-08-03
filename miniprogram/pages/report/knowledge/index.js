@@ -104,7 +104,8 @@ Page({
   onStartStudy(e) {
     const topic = e.currentTarget.dataset.topic;
     wx.setStorageSync('study_topic', topic);
-    wx.switchTab({ url: '/pages/chat/chat' });
+    // 分包页跳 tab 用 reLaunch（switchTab 在分包+tab 组合下偶发 webviewId 路由 bug）
+    wx.reLaunch({ url: '/pages/chat/chat' });
   },
 
   // 单元水平测试：先拉取教材参考材料，再跳对话让 AI 测试
@@ -117,14 +118,14 @@ Page({
       wx.setStorageSync('unit_test', unit);
       wx.setStorageSync('test_material', material);
       wx.hideLoading();
-      wx.switchTab({ url: '/pages/chat/chat' });
+      wx.reLaunch({ url: '/pages/chat/chat' });
     } catch (err) {
       console.error('[knowledge] 获取测试材料失败:', err);
       wx.hideLoading();
       // 失败也允许测试（AI 用自带知识）
       wx.setStorageSync('unit_test', unit);
       wx.setStorageSync('test_material', '');
-      wx.switchTab({ url: '/pages/chat/chat' });
+      wx.reLaunch({ url: '/pages/chat/chat' });
     }
   },
 });
