@@ -69,7 +69,7 @@ Page({
       }
     }
 
-    // 单元水平测试：自动发起测试对话
+    // 单元水平测试：自动发起对话式摸底
     const unitTest = wx.getStorageSync('unit_test');
     if (unitTest) {
       const testMaterial = wx.getStorageSync('test_material') || '';
@@ -78,7 +78,7 @@ Page({
       if (this.data.messages.length === 0 && !this.data.isLoading) {
         this._testMaterial = testMaterial; // 传给本次发送
         this.setData({
-          inputValue: `请对我进行「${unitTest}」单元的水平测试。按人教版教材，从基础概念开始逐个提问，我答完一道再进入下一道；如果我能答对大部分就说明这个单元已经会了，测试结束给我一个总结。`,
+          inputValue: `帮我摸一下我对「${unitTest}」单元的掌握情况吧。不用正式出题考试，就像聊天一样：按人教版教材，一个知识点一个知识点地跟我聊聊（比如让我说说它的定义、公式、怎么用、有没有印象），轻松自然点，我随口答就行。你根据我的回答判断每个知识点我掌握得怎么样（掌握/半懂/不会），聊完全部知识点后给我一个总结。`,
         });
         setTimeout(() => {
           this.onSendMessage();
