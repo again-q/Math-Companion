@@ -7,7 +7,7 @@ const db = cloud.database();
  */
 async function getConfig() {
   try {
-    const res = await db.collection('mt_config').where({ key: 'systemPrompt' }).limit(1).get();
+    const res = await db.collection('mt_config').where({ key: 'systemPrompt', _openid: getOpenId() || '__anon__' }).limit(1).get();
     const systemPrompt = res.data.length > 0 ? res.data[0].value : '';
     return { code: 0, data: { systemPrompt } };
   } catch (e) {
@@ -27,14 +27,14 @@ async function setConfig(data) {
     return { code: 400, error: '提示词过长（最多 5000 字）' };
   }
   try {
-    const existing = await db.collection('mt_config').where({ key: 'systemPrompt' }).limit(1).get();
+    const existing = await db.collection('mt_config').where({ key: 'systemPrompt', _openid: getOpenId() || '__anon__' }).limit(1).get();
     if (existing.data.length > 0) {
       await db.collection('mt_config').doc(existing.data[0]._id).update({
         data: { value: data.systemPrompt, updatedAt: db.serverDate() },
       });
     } else {
       await db.collection('mt_config').add({
-        data: { key: 'systemPrompt', value: data.systemPrompt, createdAt: db.serverDate() },
+        data: { key: 'systemPrompt', _openid: getOpenId() || '__anon__', value: data.systemPrompt, createdAt: db.serverDate() },
       });
     }
     return { code: 0, message: '保存成功' };

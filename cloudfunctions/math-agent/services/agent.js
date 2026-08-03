@@ -5,7 +5,7 @@
  * 通过 Prompt 限制业务规则，无需代码判断。
  */
 
-const { db } = require('../lib/dbHelper');
+const { db, getOpenId } = require('../lib/dbHelper');
 
 const AGENT_CONFIG = {
   name: '数学小伴',
@@ -123,7 +123,7 @@ async function getCustomPrompt() {
 
 async function getProfile() {
   try {
-    const res = await db.collection('mt_profile').where({ isDeleted: db.command.neq(true) }).limit(1).get();
+    const res = await db.collection('mt_profile').where({ _openid: getOpenId() || '__anon__', isDeleted: db.command.neq(true) }).limit(1).get();
     return res.data.length > 0 ? res.data[0] : null;
   } catch (e) {
     return null;

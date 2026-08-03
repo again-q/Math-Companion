@@ -8,7 +8,7 @@ const { getConfig, setConfig } = require('./handlers/config');
 const { getSessions, createSession, deleteSession, renameSession } = require('./handlers/sessions');
 const { handleGetMessages } = require('./handlers/getMessages');
 const { getProfile, updateProfile, addExp } = require('./handlers/profile');
-const { rebuildMemory } = require('./services/memory-builder');
+const { rebuildMemory, rebuildAllUsersMemory } = require('./services/memory-builder');
 const { getUnitMaterial } = require('./handlers/unitTest');
 
 exports.main = async (event, context) => {
@@ -20,10 +20,10 @@ exports.main = async (event, context) => {
   }
 
   if (!type && event.timerType === 'dailyMemoryRebuild') {
-    console.log('[math-agent] 定时任务触发：重建 memory');
+    console.log('[math-agent] 定时任务触发：为所有用户重建 memory');
     try {
-      await rebuildMemory();
-      return { code: 0, message: 'memory 重建完成' };
+      const result = await rebuildAllUsersMemory();
+      return { code: 0, ...result };
     } catch (e) {
       console.error('[math-agent] 定时任务失败:', e);
       return { code: 500, error: 'memory 重建失败' };

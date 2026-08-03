@@ -2,16 +2,28 @@ const cloud = require('wx-server-sdk');
 cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV });
 const db = cloud.database();
 const _ = db.command;
+const { getOpenId } = require('../lib/dbHelper');
+
+/** 当前账号的 openid（测试号/正式号各自独立档案） */
+function myOpenId() {
+  return getOpenId() || '__anon__';
+}
+
+/** 档案查询条件（按账号隔离） */
+function profileWhere() {
+  return { _openid: myOpenId(), isDeleted: _.neq(true) };
+}
 
 async function getProfile() {
   try {
-    const res = await db.collection('mt_profile').where({ isDeleted: _.neq(true) }).limit(1).get();
+    const res = await db.collection('mt_profile').where(profileWhere()).limit(1).get();
     
     if (res.data.length > 0) {
       return { code: 0, data: res.data[0] };
     }
 
     const defaultProfile = {
+      _openid: myOpenId(),
       isDeleted: false,
       nickName: '数学小能手',
       totalExp: 0,
@@ -43,7 +55,7 @@ async function updateProfile(data) {
   }
 
   try {
-    const res = await db.collection('mt_profile').where({ isDeleted: _.neq(true) }).limit(1).get();
+    const res = await db.collection('mt_profile').where(profileWhere()).limit(1).get();
     
     if (res.data.length === 0) {
       return { code: 404, error: '档案不存在' };
@@ -62,7 +74,7 @@ async function updateProfile(data) {
 
 async function addExp(amount) {
   try {
-    const res = await db.collection('mt_profile').where({ isDeleted: _.neq(true) }).limit(1).get();
+    const res = await db.collection('mt_profile').where(profileWhere()).limit(1).get();
     
     if (res.data.length === 0) {
       await getProfile();

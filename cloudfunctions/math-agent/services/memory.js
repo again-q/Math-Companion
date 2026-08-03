@@ -12,6 +12,7 @@ const cloud = require('wx-server-sdk');
 cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV });
 const db = cloud.database();
 const config = require('../config/index');
+const { getOpenId } = require('../lib/dbHelper');
 
 const _ = db.command;
 
@@ -45,7 +46,7 @@ async function getSession(sessionId) {
   if (!sessionId) return null;
 
   const res = await db.collection('mt_sessions')
-    .where({ sessionId, status: 'active', isDeleted: _.neq(true) })
+    .where({ sessionId, _openid: getOpenId() || '__anon__', status: 'active', isDeleted: _.neq(true) })
     .limit(1)
     .get();
 
@@ -65,6 +66,7 @@ async function createSession(topic) {
   await db.collection('mt_sessions').add({
     data: {
       sessionId,
+      _openid: getOpenId() || '__anon__',
       status: 'active',
       // 会话标题 = 知识点名 或 闲聊
       title: topic || '闲聊',
@@ -92,6 +94,7 @@ async function createSessionManual(title) {
   await db.collection('mt_sessions').add({
     data: {
       sessionId,
+      _openid: getOpenId() || '__anon__',
       status: 'active',
       title: title || '新对话',
       createdAt: now,
@@ -154,7 +157,7 @@ async function renameSession(sessionId, title) {
  */
 async function getRecentSessions(limit = 20) {
   const res = await db.collection('mt_sessions')
-    .where({ isDeleted: _.neq(true), status: 'active' })
+    .where({ _openid: getOpenId() || '__anon__', isDeleted: _.neq(true), status: 'active' })
     .orderBy('updatedAt', 'desc')
     .limit(limit)
     .get();
@@ -259,7 +262,7 @@ async function getTopicProgress(topic) {
   if (!topic) return null;
 
   const res = await db.collection('mt_knowledge_progress')
-    .where({ topic })
+    .where({ topic, _openid: getOpenId() || '__anon__' })
     .limit(1)
     .get();
 
@@ -283,6 +286,7 @@ async function updateKnowledgeProgress(topic, delta) {
     // 初始化
     const newDoc = {
       topic,
+      _openid: getOpenId() || '__anon__',
       level: kConfig.initialLevel,
       practicedCount: 1,
       lastPracticedAt: now,

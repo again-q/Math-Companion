@@ -7,7 +7,7 @@
 
 const memory = require('./memory');
 const { getProfile } = require('./agent');
-const { db } = require('../lib/dbHelper');
+const { db, _, getOpenId } = require('../lib/dbHelper');
 const config = require('../config/index');
 
 async function buildMemory() {
@@ -197,7 +197,7 @@ function assembleMemory({ basicSection, knowledgeSection, statsSection, analysis
 async function saveMemory(memoryContent) {
   try {
     const _ = db.command;
-    const res = await db.collection('mt_profile').where({ isDeleted: _.neq(true) }).limit(1).get();
+    const res = await db.collection('mt_profile').where({ _openid: getOpenId() || '__anon__', isDeleted: _.neq(true) }).limit(1).get();
 
     if (res.data.length === 0) {
       await db.collection('mt_profile').add({
@@ -240,7 +240,7 @@ async function updateProfileAnalysis(analysis) {
       updateData.lastSuggestions = analysis.suggestions.slice(0, 3);
     }
 
-    await db.collection('mt_profile').where({ isDeleted: _.neq(true) }).limit(1).update({ data: updateData });
+    await db.collection('mt_profile').where({ _openid: getOpenId() || '__anon__', isDeleted: _.neq(true) }).limit(1).update({ data: updateData });
   } catch (e) {
     console.error('[math-agent] 更新分析结果失败:', e);
   }
@@ -253,7 +253,7 @@ async function getAllKnowledgeProgress() {
     const MAX_TOTAL = 1000;
     let progressList = [];
     for (let skip = 0; skip < MAX_TOTAL; skip += BATCH_SIZE) {
-      const res = await db.collection('mt_knowledge_progress').skip(skip).limit(BATCH_SIZE).get();
+      const res = await db.collection('mt_knowledge_progress').where({ _openid: getOpenId() || '__anon__' }).skip(skip).limit(BATCH_SIZE).get();
       progressList = progressList.concat(res.data);
       if (res.data.length < BATCH_SIZE) break;
     }
@@ -281,8 +281,59 @@ async function getAllKnowledgeProgress() {
   }
 }
 
+/**
+ * 重建 memory（当前账号）
+ */
 async function rebuildMemory() {
   return await buildMemory();
 }
 
-module.exports = { buildMemory, rebuildMemory };
+/**
+ * 定时任务：为所有账号重建 memory（遍历 mt_profile 的 _openid）
+ */
+async function rebuildAllUsersMemory() {
+  try {
+    // 收集所有有档案的 openid（去重）
+    const openids = new Set();
+    const res = await db.collection('mt_profile')
+      .field({ _openid: true })
+      .limit(1000)
+      .get();
+    res.data.forEach(p => { if (p._openid) openids.add(p._openid); });
+
+    if (openids.size === 0) {
+      console.log('[math-agent] 定时任务：无用户档案，跳过');
+      return { code: 0, message: '无用户' };
+    }
+
+    for (const openid of openids) {
+      try {
+        // 临时设置当前 openid 上下文（getOpenId 读 WXContext，无法注入——改用 buildMemoryForUser）
+        await buildMemoryForUser(openid);
+        console.log(`[math-agent] 定时任务：已重建用户 ${openid} 的 memory`);
+      } catch (e) {
+        console.error(`[math-agent] 定时任务：用户 ${openid} 重建失败:`, e.message);
+      }
+    }
+    return { code: 0, message: `已重建 ${openids.size} 个用户` };
+  } catch (e) {
+    console.error('[math-agent] 定时任务遍历失败:', e);
+    return { code: 500, error: e.message };
+  }
+}
+
+/**
+ * 为指定 openid 构建 memory（定时任务用）
+ */
+async function buildMemoryForUser(openid) {
+  // 临时覆盖 getOpenId 的结果
+  const original = global.__tcbOpenId__;
+  global.__tcbOpenId__ = openid;
+  try {
+    return await buildMemory();
+  } finally {
+    global.__tcbOpenId__ = original;
+  }
+}
+
+module.exports = { buildMemory, rebuildMemory, rebuildAllUsersMemory };

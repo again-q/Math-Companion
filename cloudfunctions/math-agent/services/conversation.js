@@ -8,7 +8,7 @@ const memory = require('./memory');
 const strategy = require('./strategy');
 const { callDeepSeek } = require('../lib/deepseek');
 const { buildMessage, getProfile, formatProfile, parseProfileUpdate, parseFeedbackUpdate } = require('./agent');
-const { db, _ } = require('../lib/dbHelper');
+const { db, _, getOpenId } = require('../lib/dbHelper');
 
 /**
  * 从用户消息中识别知识点话题（原设计：topic 驱动知识进度；
@@ -89,7 +89,7 @@ async function handleMessage({ sessionId, content, topic, deepThink, material })
     }));
   }
   tasks.push(
-    db.collection('mt_profile').where({ isDeleted: _.neq(true) }).limit(1).update({
+    db.collection('mt_profile').where({ _openid: getOpenId() || '__anon__', isDeleted: _.neq(true) }).limit(1).update({
       data: { summaryNeedsUpdate: true, updatedAt: db.serverDate() },
     }).catch(() => {})
   );
@@ -202,7 +202,7 @@ async function updateStudyStreak() {
       }
     }
 
-    await db.collection('mt_profile').where({ isDeleted: _.neq(true) }).limit(1).update({
+    await db.collection('mt_profile').where({ _openid: getOpenId() || '__anon__', isDeleted: _.neq(true) }).limit(1).update({
       data: { lastStudyDate: today, streak, updatedAt: db.serverDate() },
     });
   } catch (e) {
@@ -213,7 +213,7 @@ async function updateStudyStreak() {
 async function updateProfileFromAI(update) {
   try {
     const _ = db.command;
-    const res = await db.collection('mt_profile').where({ isDeleted: _.neq(true) }).limit(1).get();
+    const res = await db.collection('mt_profile').where({ _openid: getOpenId() || '__anon__', isDeleted: _.neq(true) }).limit(1).get();
 
     if (res.data.length === 0) {
       return;
@@ -481,7 +481,7 @@ ${newTopics.length > 0 ? '\n薄弱：' + newTopics.map(t => t.topic).join('、')
           // AI 生成的建议与知识点评（解析失败回退程序模板）
           detailedSuggestions = report.suggestions.length > 0 ? report.suggestions : normalizeDetailedSuggestions(null);
           knowledgeReport = normalizeKnowledgeReport(report.reviews, topicsCovered);
-          await db.collection('mt_profile').where({ isDeleted: _.neq(true) }).limit(1).update({
+          await db.collection('mt_profile').where({ _openid: getOpenId() || '__anon__', isDeleted: _.neq(true) }).limit(1).update({
             data: {
               lastSummary: summary,
               lastSuggestions: suggestions,
@@ -571,7 +571,7 @@ ${newTopics.length > 0 ? `🌱 初识阶段: ${newTopics.map(t => t.topic).join(
   // === 缓存新生成的总结 ===
   if (scope === 'recent') {
     try {
-      await db.collection('mt_profile').where({ isDeleted: _.neq(true) }).limit(1).update({
+      await db.collection('mt_profile').where({ _openid: getOpenId() || '__anon__', isDeleted: _.neq(true) }).limit(1).update({
         data: {
           lastSummary: summary,
           lastSuggestions: suggestions,
