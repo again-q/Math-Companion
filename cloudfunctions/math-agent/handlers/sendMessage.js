@@ -19,6 +19,7 @@ async function sendMessage(data, context) {
       sessionId: data.sessionId || null,
       content: data.content.trim(),
       topic: data.topic || null,
+      deepThink: data.deepThink || false,
     });
 
     await addExp(10);

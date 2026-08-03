@@ -302,8 +302,10 @@ async function updateKnowledgeProgress(topic, delta) {
     consecutiveCorrect: delta.consecutiveCorrect ?? existing.consecutiveCorrect,
   };
 
-  // 根据答对/答错调整掌握程度
-  if (delta.correct === true) {
+  // 掌握程度调整：优先用 AI 判断的 levelDelta，否则按答对/答错默认增减
+  if (typeof delta.levelDelta === 'number') {
+    updateData.level = _.inc(delta.levelDelta);
+  } else if (delta.correct === true) {
     updateData.level = _.inc(kConfig.correctIncrement);
   } else if (delta.correct === false) {
     updateData.level = _.inc(-kConfig.wrongDecrement);
@@ -356,7 +358,8 @@ async function loadContext(sessionId) {
   const session = await getSession(sessionId);
   if (!session) return null;
 
-  const msgResult = await getMessages(sessionId, 1, 20);
+  // 完整历史交给 API 原生多轮处理，不人工截断（上限 500 防御异常海量）
+  const msgResult = await getMessages(sessionId, 1, 500);
 
   let progress = null;
   if (session.topic) {

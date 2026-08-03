@@ -23,7 +23,7 @@ function detectTopic(content) {
   return null;
 }
 
-async function handleMessage({ sessionId, content, topic }) {
+async function handleMessage({ sessionId, content, topic, deepThink }) {
   console.log(`[math-agent] handleMessage session=${sessionId} len=${content.length}`);
 
   if (!content || typeof content !== 'string') {
@@ -55,9 +55,15 @@ async function handleMessage({ sessionId, content, topic }) {
 
   await memory.saveMessage(currentSessionId, 'user', content);
 
-  const { systemPrompt, userMessage } = await buildMessage(context, content, profile, state);
+  // 完整历史 → API 原生多轮（不人工截断）
+  const history = (context?.lastMessages || []).map(m => ({
+    role: m.role === 'assistant' ? 'assistant' : 'user',
+    content: m.content,
+  }));
 
-  const rawReply = await callDeepSeek({ systemPrompt, userMessage }, { timeout: 25000, maxRetries: 0 });
+  const { systemPrompt, userMessage, history: fullHistory } = await buildMessage(context, content, profile, state, history);
+
+  const rawReply = await callDeepSeek({ systemPrompt, userMessage, history: fullHistory }, { timeout: 25000, maxRetries: 0, deepThink: !!deepThink });
 
   const { cleanReply, update } = parseProfileUpdate(rawReply);
   const { cleanReply: finalReply, feedback } = parseFeedbackUpdate(cleanReply);
@@ -85,11 +91,24 @@ async function handleMessage({ sessionId, content, topic }) {
   }
   if (resolvedTopic) {
     tasks.push(
-      memory.updateKnowledgeProgress(resolvedTopic, {
-        // G3 修复：用"答对信号"判断，不再用情绪（情绪积极≠答对，"有趣/简单"会误判）
-        correct: strategy.isCorrectAnswer(content),
-        consecutiveCorrect: state.consecutiveCorrect,
-      }).catch(err => console.error('[math-agent] 更新知识进度失败:', err))
+      (async () => {
+        // AI 独立判断掌握度（用户选择：对话后自动判断，更准）
+        const judge = await aiMasteryJudge(resolvedTopic, content, finalReply);
+        if (judge) {
+          await memory.updateKnowledgeProgress(resolvedTopic, {
+            correct: judge.correct,
+            consecutiveCorrect: judge.correct ? (state.consecutiveCorrect + 1) : 0,
+            levelDelta: judge.levelDelta,
+          });
+          console.log(`[math-agent] AI 判断掌握度 ${resolvedTopic}: ${judge.correct ? '掌握' : '未掌握'} Δ${judge.levelDelta}`);
+        } else {
+          // AI 判断失败 → 回退关键词判断
+          await memory.updateKnowledgeProgress(resolvedTopic, {
+            correct: strategy.isCorrectAnswer(content),
+            consecutiveCorrect: state.consecutiveCorrect,
+          });
+        }
+      })().catch(err => console.error('[math-agent] 更新知识进度失败:', err))
     );
   }
   await Promise.all(tasks).catch(err => console.error('[math-agent] 异步操作失败:', err));
@@ -101,6 +120,30 @@ async function handleMessage({ sessionId, content, topic }) {
     sessionId: currentSessionId,
     emotion,
   };
+}
+
+/**
+ * AI 独立判断掌握度：结合对话内容判断学生对知识点的真实掌握变化
+ * @returns {Promise<{correct: boolean, levelDelta: number, comment: string}|null>}
+ */
+async function aiMasteryJudge(topic, userContent, aiReply) {
+  try {
+    const systemPrompt = '你是数学学情分析助手。根据对话，判断学生对指定知识点的掌握情况。只返回 JSON，不要其他文字：{"correct": true/false, "levelDelta": 0到0.15的浮点数, "comment": "一句话点评"}。correct 表示学生这次是否真正掌握（能独立运用）；levelDelta 表示掌握度变化（掌握了涨 0.05~0.15，未掌握可为 0 或小负数）。';
+    const userMessage = `知识点：${topic}\n学生消息：${String(userContent).slice(0, 300)}\n小伴回答：${String(aiReply).slice(0, 500)}\n\n判断并返回 JSON。`;
+    const reply = await callDeepSeek(
+      { systemPrompt, userMessage },
+      { timeout: 15000, maxRetries: 0, json: true }
+    );
+    const parsed = JSON.parse(reply);
+    return {
+      correct: parsed.correct !== false,
+      levelDelta: Math.min(0.15, Math.max(-0.05, Number(parsed.levelDelta) || 0)),
+      comment: parsed.comment || '',
+    };
+  } catch (e) {
+    console.warn('[math-agent] AI 掌握度判断失败，回退关键词:', e.message);
+    return null;
+  }
 }
 
 /**
@@ -312,9 +355,10 @@ async function generateSummary({ scope = 'recent', forceUpdate = false } = {}) {
 
   const config = require('../config/index');
 
-  let topicList = [...topics];
+  // 全部基础知识点（初一到初三，含未开始的）——知识地图用
+  const topicList = [...config.defaultTopics];
   if (topicList.length === 0) {
-    topicList = [...config.defaultTopics];
+    topicList.push('数学');
   }
 
   const topicsCovered = [];
@@ -326,6 +370,7 @@ async function generateSummary({ scope = 'recent', forceUpdate = false } = {}) {
       level,
       practicedCount: progress?.practicedCount || 0,
       consecutiveCorrect: progress?.consecutiveCorrect || 0,
+      lastPracticedAt: progress?.lastPracticedAt || null,
       levelDesc: level === 0 ? '未开始' : level < 0.3 ? '初识' : level < 0.5 ? '了解' : level < 0.7 ? '掌握' : level < 0.9 ? '熟练' : '精通',
     });
   }
@@ -599,17 +644,19 @@ function parseAiReport(reply) {
  * @param {Array} topicsCovered - 知识点列表（含 level/practicedCount 等）
  */
 function normalizeKnowledgeReport(aiReport, topicsCovered) {
-  const practiced = topicsCovered.filter(t => t.level > 0);
-  return practiced.map(t => {
+  // 全部知识点（含未开始）——知识地图
+  return topicsCovered.map(t => {
     const ai = Array.isArray(aiReport) ? aiReport.find(r => r && r.topic === t.topic) : null;
+    const practiced = t.level > 0;
     return {
       topic: t.topic,
       level: t.level,
       practicedCount: t.practicedCount,
       consecutiveCorrect: t.consecutiveCorrect,
+      lastPracticedAt: t.lastPracticedAt || null,
       levelDesc: t.levelDesc,
-      comment: (ai && ai.comment) || programKnowledgeComment(t),
-      nextStep: (ai && ai.nextStep) || programKnowledgeNextStep(t),
+      comment: practiced ? ((ai && ai.comment) || programKnowledgeComment(t)) : '',
+      nextStep: practiced ? ((ai && ai.nextStep) || programKnowledgeNextStep(t)) : '',
     };
   });
 }
@@ -658,13 +705,13 @@ async function buildStats(sessions, profile) {
   const firstDate = new Date(firstSession.createdAt);
   const learningDays = Math.floor((now - firstDate) / (1000 * 60 * 60 * 24)) + 1;
 
-  const topics = new Set();
-  for (const session of sessions) {
-    if (session.topic) topics.add(session.topic);
-  }
+  const config = require('../config/index');
+
+  // 全部基础知识点（初一到初三，含未开始）——知识地图用
+  const topicList = config.defaultTopics.length > 0 ? config.defaultTopics : ['数学'];
 
   const topicsCovered = [];
-  for (const topic of topics) {
+  for (const topic of topicList) {
     const progress = await memory.getTopicProgress(topic);
     const level = progress?.level || 0;
     topicsCovered.push({
@@ -672,6 +719,7 @@ async function buildStats(sessions, profile) {
       level,
       practicedCount: progress?.practicedCount || 0,
       consecutiveCorrect: progress?.consecutiveCorrect || 0,
+      lastPracticedAt: progress?.lastPracticedAt || null,
       levelDesc: level === 0 ? '未开始' : level < 0.3 ? '初识' : level < 0.5 ? '了解' : level < 0.7 ? '掌握' : level < 0.9 ? '熟练' : '精通',
     });
   }

@@ -61,14 +61,23 @@ Page({
     topicsCount: 0,
     knowledgeCount: 0,
     suggestionsCount: 0,
+    _inited: false,
   },
 
   onShow() {
-    this.loadSummary();
+    // 首次进入显示 loading；之后（含从详情页返回）静默刷新，避免闪烁
+    if (this.data._inited) {
+      this.loadSummary(true);
+    } else {
+      this.loadSummary(false);
+      this.setData({ _inited: true });
+    }
   },
 
-  async loadSummary() {
-    this.setData({ loading: true });
+  async loadSummary(silent = false) {
+    if (!silent) {
+      this.setData({ loading: true });
+    }
     try {
       const data = await chatService.getSummary(this.data.scope);
       if (data) {
@@ -101,7 +110,9 @@ Page({
       console.error('[summary] 加载失败:', e);
       this.setData({ empty: true });
     } finally {
-      this.setData({ loading: false });
+      if (!silent) {
+        this.setData({ loading: false });
+      }
     }
   },
 
@@ -158,8 +169,8 @@ Page({
         name: 'math-agent',
         data: { type: 'updateProfile', data: { summaryNeedsUpdate: true } },
       });
-      // 第三步：重新加载总结
-      await this.loadSummary();
+      // 第三步：重新加载总结（按钮 refreshing 已表达状态，静默加载）
+      await this.loadSummary(true);
     } catch (e) {
       console.error('[summary] 刷新失败:', e);
     } finally {

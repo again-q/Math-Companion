@@ -13,9 +13,10 @@ const FUNCTION_NAME = 'math-agent';
  * @param {string|null} sessionId - 会话 ID（新会话传 null）
  * @param {string} content - 用户消息
  * @param {string} [topic] - 知识点话题
+ * @param {boolean} [deepThink] - 是否开启深度思考（更高质量回答）
  * @returns {Promise<{reply: string, sessionId: string, emotion: string}>}
  */
-function sendMessage(sessionId, content, topic) {
+function sendMessage(sessionId, content, topic, deepThink) {
   return new Promise((resolve, reject) => {
     wx.cloud.callFunction({
       name: FUNCTION_NAME,
@@ -25,6 +26,7 @@ function sendMessage(sessionId, content, topic) {
           sessionId: sessionId || null,
           content: content,
           topic: topic || null,
+          deepThink: !!deepThink,
         },
       },
       success: (res) => {

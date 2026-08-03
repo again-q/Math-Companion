@@ -18,6 +18,7 @@ Page({
     inputValue: '',
     isLoading: false,
     isTyping: false,
+    deepThink: false,
 
     // AI 状态
     currentEmotion: 'happy',
@@ -53,6 +54,21 @@ Page({
   },
 
   onShow() {
+    // 从知识点地图"开始学习"跳转：自动发起该知识点学习
+    const studyTopic = wx.getStorageSync('study_topic');
+    if (studyTopic) {
+      wx.removeStorageSync('study_topic');
+      // 仅当当前是空会话（无消息）时自动发起，避免打断已有对话
+      if (this.data.messages.length === 0 && !this.data.isLoading) {
+        this.setData({
+          inputValue: `我们来学习「${studyTopic}」，先从基础概念开始讲起吧`,
+        });
+        setTimeout(() => {
+          this.onSendMessage();
+        }, 400);
+      }
+    }
+
     // Tab 切换回来时，检查是否有从记忆页跳转的会话
     const pendingId = wx.getStorageSync('view_session_id');
     if (pendingId) {
@@ -305,7 +321,9 @@ Page({
 
       const result = await chatService.sendMessage(
         this.data.sessionId,
-        content
+        content,
+        null,
+        this.data.deepThink
       );
 
       const updateData = {};
@@ -338,6 +356,14 @@ Page({
         isTyping: false,
       });
     }
+  },
+
+  // 深度思考开关
+  onToggleDeepThink() {
+    const deepThink = !this.data.deepThink;
+    this.setData({ deepThink });
+    wx.vibrateShort({ type: 'light' });
+    this.showToast(deepThink ? '⚡ 已开启深度思考，回答更详细' : '已关闭深度思考');
   },
 
   // ============================================================

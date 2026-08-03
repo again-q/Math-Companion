@@ -34,12 +34,19 @@ async function callDeepSeek({ systemPrompt, userMessage }, options = {}) {
     model,
     messages: [
       { role: 'system', content: systemPrompt },
+      // 完整对话历史（API 原生多轮上下文，不人工截断）
+      ...(Array.isArray(options.history) ? options.history : []),
       { role: 'user', content: userMessage },
     ],
     temperature: 0.7,
     max_tokens: 2048,
     // JSON 模式：强制结构化输出（如 AI 总结生成）
     ...(options.json ? { response_format: { type: 'json_object' } } : {}),
+    // 深度思考模式：开启 thinking + 提高 reasoning_effort（更高质量回答，更慢）
+    ...(options.deepThink ? {
+      thinking: { type: 'enabled' },
+      reasoning_effort: options.deepEffort || 'high',
+    } : {}),
   });
 
   let lastError = null;

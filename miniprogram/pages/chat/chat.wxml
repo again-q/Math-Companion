@@ -9,6 +9,12 @@
     <!-- 顶部渐变背景 -->
     <view class="msg-bg-top"></view>
 
+    <!-- 加载历史消息 -->
+    <view class="msg-loading" wx:if="{{isLoading && messages.length === 0}}">
+      <view class="loading-spinner"></view>
+      <text class="loading-text">小伴正在加载消息...</text>
+    </view>
+
     <!-- 空状态 -->
     <view class="chat-empty" wx:if="{{messages.length === 0 && !isLoading}}">
       <view class="empty-avatar">
@@ -36,10 +42,13 @@
         
         <view class="msg-content {{item.role}}">
           <view class="msg-bubble {{item.role}}" bindlongpress="copyMessage" data-content="{{item.content}}">
-            <view class="typing-dots" wx:if="{{item.role === 'assistant' && item.content === ''}}">
-              <view class="typing-dot"></view>
-              <view class="typing-dot"></view>
-              <view class="typing-dot"></view>
+            <view class="typing-wrap" wx:if="{{item.role === 'assistant' && item.content === ''}}">
+              <view class="typing-dots">
+                <view class="typing-dot"></view>
+                <view class="typing-dot"></view>
+                <view class="typing-dot"></view>
+              </view>
+              <text class="typing-text">小伴思考中</text>
             </view>
             <text wx:else>{{item.content}}</text>
           </view>
@@ -68,6 +77,10 @@
        ============================================================ -->
   <view class="input-area">
     <view class="input-container">
+      <view class="input-deep {{deepThink ? 'active' : ''}}" bindtap="onToggleDeepThink">
+        <text class="deep-icon">⚡</text>
+        <text class="deep-label" wx:if="{{deepThink}}">深度</text>
+      </view>
       <view class="input-box">
         <input class="input" placeholder="输入你想学的内容~" value="{{inputValue}}"
           bindinput="onInputChange" bindconfirm="onSendMessage" confirm-type="send"

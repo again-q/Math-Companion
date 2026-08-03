@@ -1,5 +1,5 @@
 /* ============================================================
-   知识点掌握报告页
+   知识点地图页
    ============================================================ */
 
 .report-page {
@@ -23,91 +23,178 @@
 
 .report-header-sub {
   display: block;
-  font-size: var(--font-md);
+  font-size: var(--font-sm);
   color: var(--text-secondary);
 }
 
-.report-list {
+/* ============================================================
+   单元分组
+   ============================================================ */
+.map-list {
   display: flex;
   flex-direction: column;
-  gap: var(--space);
+  gap: var(--space-xl);
 }
 
-.knowledge-card {
-  background: var(--bg-card);
-  border-radius: var(--radius-xl);
-  padding: var(--space-xl);
-  box-shadow: 0 4rpx 20rpx var(--shadow-sm);
+.grade-group {
   animation: fadeInUp 0.35s ease both;
 }
 
-.knowledge-header {
+.grade-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: var(--space);
+  padding: 0 4rpx;
+}
+
+.grade-name {
+  font-size: var(--font-lg);
+  font-weight: 700;
+  color: var(--primary-dark);
+}
+
+.grade-count {
+  font-size: var(--font-xs);
+  color: var(--text-tertiary);
+}
+
+/* ============================================================
+   知识点行
+   ============================================================ */
+.topic-row {
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  padding: var(--space) var(--space-lg);
+  margin-bottom: var(--space);
+  box-shadow: 0 2rpx 12rpx var(--shadow-sm);
+}
+
+.topic-top {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: var(--space);
 }
 
-.knowledge-name {
-  font-size: var(--font-xl);
+.topic-name-wrap {
+  display: flex;
+  align-items: center;
+  gap: var(--space);
+  flex: 1;
+  min-width: 0;
+}
+
+.topic-name {
+  font-size: var(--font-md);
   font-weight: 600;
   color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.knowledge-level {
+.topic-level {
   font-size: var(--font-xs);
-  padding: 6rpx 18rpx;
+  padding: 4rpx 14rpx;
   border-radius: var(--radius-full);
+  flex-shrink: 0;
+}
+
+.topic-level.none {
+  background: var(--bg-input);
+  color: var(--text-tertiary);
+}
+
+.topic-level.start {
+  background: rgba(255,59,48,0.1);
+  color: #C62828;
+}
+
+.topic-level.mid {
+  background: rgba(255,149,0,0.15);
+  color: #B26A00;
+}
+
+.topic-level.good {
+  background: rgba(52,199,89,0.15);
+  color: #2E7D32;
+}
+
+/* 开始学习按钮 */
+.topic-start {
+  flex-shrink: 0;
+  margin-left: var(--space);
+  padding: 10rpx 24rpx;
+  border-radius: var(--radius-full);
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.topic-start:active {
+  transform: scale(0.95);
+  opacity: 0.85;
+}
+
+.topic-start-text {
+  font-size: var(--font-xs);
+  color: var(--text-on-primary);
   font-weight: 600;
 }
 
-.progress-bar-bg {
-  height: 16rpx;
+/* 进度条 */
+.topic-progress-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space);
+  margin-top: var(--space-sm);
+}
+
+.topic-progress-bg {
+  flex: 1;
+  height: 10rpx;
   background: var(--bg-input);
-  border-radius: 8rpx;
+  border-radius: 5rpx;
   overflow: hidden;
 }
 
-.progress-bar-fill {
+.topic-progress-fill {
   height: 100%;
   background: linear-gradient(90deg, var(--primary) 0%, var(--primary-dark) 100%);
-  border-radius: 8rpx;
-  transition: width 0.5s ease;
+  border-radius: 5rpx;
+  transition: width 0.4s ease;
 }
 
-.knowledge-stats {
-  display: flex;
-  gap: var(--space-lg);
-  margin-top: var(--space);
-}
-
-.stat-item {
+.topic-percent {
   font-size: var(--font-xs);
   color: var(--text-secondary);
+  width: 60rpx;
+  text-align: right;
+  flex-shrink: 0;
 }
 
-.ai-comment,
-.ai-next {
-  margin-top: var(--space-lg);
-  background: var(--bg-input);
-  border-radius: var(--radius);
-  padding: var(--space);
+/* 元信息 + AI 点评 */
+.topic-meta {
+  display: flex;
+  gap: var(--space-lg);
+  margin-top: var(--space-xs);
 }
 
-.ai-comment-label,
-.ai-next-label {
-  display: block;
+.topic-meta-item {
   font-size: var(--font-xs);
-  font-weight: 600;
-  color: var(--primary-dark);
-  margin-bottom: 6rpx;
+  color: var(--text-tertiary);
 }
 
-.ai-comment-text,
-.ai-next-text {
-  font-size: var(--font-sm);
-  color: var(--text-primary);
-  line-height: 1.7;
+.topic-comment {
+  margin-top: var(--space-sm);
+  padding: var(--space) var(--space-sm);
+  background: var(--bg-input);
+  border-radius: var(--radius-sm);
+}
+
+.topic-comment-text {
+  font-size: var(--font-xs);
+  color: var(--text-secondary);
+  line-height: 1.6;
 }
 
 /* 加载 / 空状态 */

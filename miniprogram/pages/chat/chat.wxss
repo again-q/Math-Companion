@@ -134,6 +134,33 @@
   animation: fadeInUp 0.35s ease both;
 }
 
+/* 加载历史消息 */
+.msg-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 160rpx 40rpx;
+}
+
+.msg-loading .loading-spinner {
+  width: 52rpx;
+  height: 52rpx;
+  border: 4rpx solid var(--primary);
+  border-top-color: var(--primary-dark);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 24rpx;
+}
+
+.msg-loading .loading-text {
+  font-size: var(--font-sm);
+  color: var(--text-secondary);
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
 .msg-item.user {
   justify-content: flex-end;
 }
@@ -332,6 +359,47 @@
   flex-shrink: 0;
 }
 
+/* 深度思考按钮 */
+.input-deep {
+  width: 72rpx;
+  height: 72rpx;
+  border-radius: 50%;
+  background: var(--bg-card);
+  border: 2rpx solid rgba(0,0,0,0.06);
+  box-shadow: 0 2rpx 12rpx rgba(0,0,0,0.04);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.25s ease;
+}
+
+.input-deep .deep-icon {
+  font-size: 30rpx;
+  filter: grayscale(1);
+  opacity: 0.5;
+}
+
+.input-deep.active {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+  border-color: transparent;
+  width: auto;
+  padding: 0 20rpx;
+  border-radius: var(--radius-full);
+}
+
+.input-deep.active .deep-icon {
+  filter: none;
+  opacity: 1;
+}
+
+.input-deep .deep-label {
+  font-size: 22rpx;
+  color: var(--text-on-primary);
+  font-weight: 600;
+  margin-left: 4rpx;
+}
+
 .input-voice text {
   font-size: 32rpx;
 }
@@ -369,4 +437,16 @@
 @keyframes typing {
   0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
   30% { transform: translateY(-12rpx); opacity: 1; }
+}
+
+/* 思考中文字 */
+.typing-wrap {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+}
+
+.typing-text {
+  font-size: 22rpx;
+  color: var(--text-tertiary);
 }

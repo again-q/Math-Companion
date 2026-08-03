@@ -1,7 +1,7 @@
 <view class="report-page">
   <view class="report-header">
-    <text class="report-header-title">📈 知识点掌握报告</text>
-    <text class="report-header-sub">每个知识点的掌握情况与 AI 点评</text>
+    <text class="report-header-title">📚 知识点地图</text>
+    <text class="report-header-sub">初一到初三全部知识点 · 点「开始学习」逐个攻克</text>
   </view>
 
   <view class="loading-state" wx:if="{{loading}}">
@@ -11,35 +11,43 @@
 
   <view class="empty-state" wx:elif="{{empty}}">
     <text class="empty-icon">📭</text>
-    <text class="empty-text">还没有练习过知识点</text>
+    <text class="empty-text">还没有学习记录，先去聊一聊吧</text>
     <view class="empty-btn" bindtap="retry">重新加载</view>
   </view>
 
-  <view class="report-list" wx:else>
-    <view class="knowledge-card" wx:for="{{report}}" wx:key="topic">
-      <view class="knowledge-header">
-        <text class="knowledge-name">{{item.topic}}</text>
-        <text class="knowledge-level" style="background: {{item.levelBg}}; color: {{item.levelColor}};">{{item.levelDesc}}</text>
+  <view class="map-list" wx:else>
+    <view class="grade-group" wx:for="{{groups}}" wx:key="grade" wx:for-item="group">
+      <view class="grade-header">
+        <text class="grade-name">{{group.grade}}</text>
+        <text class="grade-count">{{group.practicedCount}}/{{group.topics.length}} 已学</text>
       </view>
 
-      <view class="progress-bar-bg">
-        <view class="progress-bar-fill" style="width: {{item.percent}}%;"></view>
-      </view>
+      <view class="topic-row" wx:for="{{group.topics}}" wx:key="topic" wx:for-item="item">
+        <view class="topic-top">
+          <view class="topic-name-wrap">
+            <text class="topic-name">{{item.topic}}</text>
+            <text class="topic-level {{item.levelClass}}">{{item.levelDesc}}</text>
+          </view>
+          <view class="topic-start" hover-class="btn-hover" bindtap="onStartStudy" data-topic="{{item.topic}}">
+            <text class="topic-start-text">{{item.level > 0 ? '继续学习' : '开始学习'}}</text>
+          </view>
+        </view>
 
-      <view class="knowledge-stats">
-        <text class="stat-item">练习 {{item.practicedCount}} 次</text>
-        <text class="stat-item">掌握度 {{item.percent}}%</text>
-        <text class="stat-item">连续答对 {{item.consecutiveCorrect}} 次</text>
-      </view>
+        <view class="topic-progress-row">
+          <view class="topic-progress-bg">
+            <view class="topic-progress-fill" style="width: {{item.percent}}%;"></view>
+          </view>
+          <text class="topic-percent">{{item.percent}}%</text>
+        </view>
 
-      <view class="ai-comment" wx:if="{{item.comment}}">
-        <text class="ai-comment-label">🤖 AI 点评</text>
-        <text class="ai-comment-text">{{item.comment}}</text>
-      </view>
+        <view class="topic-meta" wx:if="{{item.practicedCount > 0}}">
+          <text class="topic-meta-item">练习 {{item.practicedCount}} 次</text>
+          <text class="topic-meta-item">连续答对 {{item.consecutiveCorrect}} 次</text>
+        </view>
 
-      <view class="ai-next" wx:if="{{item.nextStep}}">
-        <text class="ai-next-label">👉 下一步</text>
-        <text class="ai-next-text">{{item.nextStep}}</text>
+        <view class="topic-comment" wx:if="{{item.comment}}">
+          <text class="topic-comment-text">{{item.comment}}</text>
+        </view>
       </view>
     </view>
 

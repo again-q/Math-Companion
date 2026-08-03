@@ -21,6 +21,12 @@ const AGENT_CONFIG = {
 ## 教学原则（认知科学驱动）
 - **认知负荷控制**：基础弱的学生工作记忆容量紧张——一次只讲一个知识点；讲新概念前先给一个熟悉的生活类比"打底"（先行组织者），再进入细节，避免信息过载
 - **脚手架式引导（最近发展区）**：难度控制在"跳一跳够得着"；先完整示范一步 → 再让学生补关键步骤 → 最后独立完成，逐步撤除支持
+- **真正的苏格拉底式引导（重要！）**：
+  - 引导 = **搭梯子**：每个问题比上一个更具体、更接近答案（先问大方向 → 再问关键步骤 → 再问具体数值），像梯子一级一级往上，学生每答一步就往上走一级
+  - 学生答不出当前问题 → **补上这一级梯子**（讲一小步原理、给一个类比、示范一步），然后再基于新知识问下一个问题——引导和讲解交替进行，**不是连续追问同一问题**
+  - 回答完学生的问题后要**继续推进**：给新信息、新练习或新角度，每轮对话都让学生学到新东西，不原地打转
+  - 学生表现出已理解（答对/说懂了）就**自然推进**到下一步或下一题
+  - 学生答错时先诊断卡在哪一步，再针对性补那一级
 - **检索练习 + 自我解释**：让学生主动回忆（"还记得上次学的 xx 吗？"）和用自己的话解释（"用你的话说说看"）——这比重复讲解记忆更牢
 - **间隔与交错复习**：讲新内容时偶尔混入已学知识点；隔几天复习旧点（间隔效应）
 - **错误驱动学习**：学生答错时先引导找出错因（"你觉得是哪一步卡住了？"），拆解原因后再讲，不简单给答案
@@ -151,7 +157,6 @@ function formatProfile(profile) {
 }
 
 async function getSystemPrompt(context, topic, profile, state) {
-  const contextStr = formatContext(context);
   const currentTopic = topic || context?.topic || '数学';
   const profileStr = formatProfile(profile);
   const customPrompt = await getCustomPrompt();
@@ -194,9 +199,6 @@ ${profileStr}
     return `${customPrompt}
 ${profileSection}${memorySection}${feedbackSection}
 
-## 当前教学进度
-${contextStr}
-
 ## 当前知识点
 ${currentTopic}${stateSection}`;
   }
@@ -204,32 +206,16 @@ ${currentTopic}${stateSection}`;
   return `${AGENT_CONFIG.defaultPrompt}
 ${profileSection}${memorySection}${feedbackSection}
 
-## 当前教学进度
-${contextStr}
-
 ## 当前知识点
 ${currentTopic}${stateSection}`;
 }
 
-function formatContext(context) {
-  if (!context?.lastMessages || context.lastMessages.length === 0) {
-    return '（新会话，暂无历史记录）';
-  }
-
-  return context.lastMessages
-    .slice(-5)
-    .map(msg => {
-      const role = msg.role === 'user' ? '学生' : AGENT_CONFIG.name;
-      return `${role}: ${msg.content}`;
-    })
-    .join('\n');
-}
-
-async function buildMessage(context, content, profile, state) {
+async function buildMessage(context, content, profile, state, history) {
   const systemPrompt = await getSystemPrompt(context, context?.topic, profile, state);
-  const userMessage = `学生问：${content}`;
+  // 历史消息交给 API 原生多轮（messages 数组），userMessage 只放当前消息
+  const userMessage = content;
 
-  return { systemPrompt, userMessage };
+  return { systemPrompt, userMessage, history };
 }
 
 function parseProfileUpdate(reply) {
