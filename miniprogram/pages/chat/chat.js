@@ -49,6 +49,9 @@ Page({
   // ============================================================
 
   onLoad() {
+    // 防串会话：请求序号初始化
+    this._loadSeq = 0;
+    this._switchSeq = 0;
     // 冷启动小程序 → 默认新对话
     this.loadSessionFromCloud();
   },
@@ -99,6 +102,8 @@ Page({
    * 从云端加载指定会话的历史消息
    */
   async loadSessionFromCloud() {
+    // 【防串会话】请求序号：只有最新一次加载生效
+    const loadToken = ++this._loadSeq;
     const targetSessionId = wx.getStorageSync('view_session_id');
 
     // Tab 切换回来但没有指定会话 → 保持当前会话不动
@@ -112,6 +117,9 @@ Page({
 
       try {
         const msgResult = await chatService.getMessages(targetSessionId);
+        if (this._loadSeq !== loadToken) {
+          return; // 期间又有新的加载请求，丢弃本次
+        }
         // 独立加载会话列表，失败不影响消息展示
         this.fetchSessionList().catch(() => {});
 
@@ -136,13 +144,17 @@ Page({
 
         return;
       } catch (e) {
+        if (this._loadSeq !== loadToken) return;
         console.error('[chat] 云端加载失败:', e);
         this.setData({ isLoading: false });
         return;
       }
     }
 
-    // 没有指定会话 → 默认新对话
+    // 没有指定会话 → 默认新对话（校验序号，避免并发覆盖）
+    if (this._loadSeq !== loadToken) {
+      return;
+    }
     this.setData({
       sessionId: null,
       sessionTitle: '',
@@ -195,10 +207,17 @@ Page({
       return;
     }
 
+    // 【防串会话】请求序号：只有最新的切换请求生效，避免先发起的慢请求覆盖
+    const switchToken = ++this._switchSeq;
+
     this.setData({ isLoading: true });
 
     try {
       const msgResult = await chatService.getMessages(targetId);
+
+      if (this._switchSeq !== switchToken) {
+        return; // 期间又切换了会话，丢弃本次结果
+      }
 
       const messages = (msgResult.messages || []).map((msg, i) => ({
         msgId: 'msg-' + i,
@@ -221,6 +240,7 @@ Page({
         this.scrollToBottom();
       }, 300);
     } catch (e) {
+      if (this._switchSeq !== switchToken) return;
       console.error('[chat] 切换会话失败:', e);
       this.setData({ isLoading: false });
       this.showToast('切换会话失败');
@@ -333,13 +353,19 @@ Page({
 
     try {
       // 新会话先创建会话，确保有 sessionId
-      if (!this.data.sessionId) {
+      // 【防串会话】用局部变量保存本次发送的 sessionId，异步期间用户切换会话不覆盖
+      let sendSessionId = this.data.sessionId;
+      if (!sendSessionId) {
         const createResult = await chatService.createSession('新对话');
-        this.setData({ sessionId: createResult.sessionId });
+        sendSessionId = createResult.sessionId;
+        // 仅在用户仍处于"无会话"状态时更新（没切走才赋值）
+        if (!this.data.sessionId) {
+          this.setData({ sessionId: sendSessionId });
+        }
       }
 
       const result = await chatService.sendMessage(
-        this.data.sessionId,
+        sendSessionId,
         content,
         null,
         this.data.deepThink,
@@ -347,12 +373,14 @@ Page({
       );
       this._testMaterial = null; // 测试材料只注入首次
 
+      // 回复的 sessionId 只在用户仍停留在此会话时更新，避免切走后被覆盖
       const updateData = {};
       if (result.sessionId) {
         updateData.sessionId = result.sessionId;
       }
-
-      this.setData(updateData);
+      if (!this.data.sessionId || this.data.sessionId === sendSessionId) {
+        this.setData(updateData);
+      }
 
       await this.typewriterEffect(result.reply || '');
 
