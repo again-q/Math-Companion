@@ -43,13 +43,17 @@ async function handleMessage({ sessionId, content, topic, deepThink, material })
   }
 
   if (resolvedTopic) {
-    // 标题自动 = 知识点名（仅当还是默认名时覆盖，用户重命名过则保留）
+    // 【防串会话】会话主题只在尚无 topic 时确定，避免用户随口提其他话题导致主题漂移
+    // （漂移会让 AI 的"当前知识点/掌握度"切换到别的知识点，回复内容看起来串会）
     const cur = await db.collection('mt_sessions').where({ sessionId: currentSessionId }).limit(1).get();
-    const curTitle = cur.data[0]?.title;
-    const isDefaultTitle = !curTitle || curTitle === '新对话' || curTitle === '闲聊';
-    await db.collection('mt_sessions')
-      .where({ sessionId: currentSessionId })
-      .update({ data: { topic: resolvedTopic, ...(isDefaultTitle ? { title: resolvedTopic } : {}) } });
+    const curSession = cur.data[0];
+    if (!curSession?.topic) {
+      // 标题只在默认名（闲聊/新对话）时更新为知识点名，用户重命名过则保留
+      const isDefaultTitle = !curSession?.title || curSession.title === '新对话' || curSession.title === '闲聊';
+      await db.collection('mt_sessions')
+        .where({ sessionId: currentSessionId })
+        .update({ data: { topic: resolvedTopic, ...(isDefaultTitle ? { title: resolvedTopic } : {}) } });
+    }
   }
 
   const context = await memory.loadContext(currentSessionId);
