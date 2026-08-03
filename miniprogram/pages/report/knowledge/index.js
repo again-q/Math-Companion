@@ -65,7 +65,9 @@ Page({
           unitStatus = '学习中';
           unitClass = 'mid';
         }
-        return { ...g, topics, practicedCount, unitStatus, unitClass };
+        // 单元主按钮：名字随状态变化（未学习→开始测试 / 学习中→开始学习 / 已掌握→复习）
+        const mainBtnText = unitStatus === '未学习' ? '🎯 开始测试' : unitStatus === '学习中' ? '📖 开始学习' : '🔄 复习';
+        return { ...g, topics, practicedCount, unitStatus, unitClass, mainBtnText };
       });
 
       // 单元排序：未学习 > 学习中 > 已掌握（优先弹没学过的和掌握度低的）
@@ -105,6 +107,23 @@ Page({
     const topic = e.currentTarget.dataset.topic;
     wx.setStorageSync('study_topic', topic);
     // 分包页跳 tab 用 reLaunch（switchTab 在分包+tab 组合下偶发 webviewId 路由 bug）
+    wx.reLaunch({ url: '/pages/chat/chat' });
+  },
+
+  // 单元主按钮：未学习→摸底测试；学习中/已掌握→跳该单元第一个未掌握知识点开始学习
+  onUnitMain(e) {
+    const unit = e.currentTarget.dataset.unit;
+    const group = this.data.groups.find(g => g.grade === unit);
+    if (!group) return;
+
+    if (group.unitStatus === '未学习') {
+      this.onTestUnit(e);
+      return;
+    }
+    // 学习中/已掌握：跳第一个未掌握（level<0.5）的知识点，全掌握则跳第一个
+    const target = group.topics.find(t => t.level < 0.5) || group.topics[0];
+    if (!target) return;
+    wx.setStorageSync('study_topic', target.topic);
     wx.reLaunch({ url: '/pages/chat/chat' });
   },
 

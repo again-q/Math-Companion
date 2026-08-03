@@ -23,9 +23,9 @@
         <view class="grade-right">
           <text class="unit-status {{group.unitClass}}">{{group.unitStatus}}</text>
           <text class="grade-count">{{group.practicedCount}}/{{group.topics.length}} 已学</text>
-          <!-- 未学习单元：主按钮 = 开始测试（摸底）；已学习单元不显示测试入口 -->
-          <view class="unit-test-btn" wx:if="{{group.unitStatus === '未学习'}}" hover-class="btn-hover" bindtap="onTestUnit" data-unit="{{group.grade}}">
-            <text class="unit-test-text">🎯 开始测试</text>
+          <!-- 单元主按钮：名字随状态变（未学习→开始测试 / 学习中→开始学习 / 已掌握→复习） -->
+          <view class="unit-test-btn" hover-class="btn-hover" bindtap="onUnitMain" data-unit="{{group.grade}}">
+            <text class="unit-test-text">{{group.mainBtnText}}</text>
           </view>
         </view>
       </view>
