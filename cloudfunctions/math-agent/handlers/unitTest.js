@@ -15,8 +15,8 @@ async function getUnitMaterial(data) {
   }
 
   try {
-    // 搜该单元的核心知识点总结（人教版）
-    const q1 = `人教版 初中数学 ${unit} 知识点总结`;
+    // 搜该知识点的定义/公式（人教版），搜索词更具体有助于返回概念本身
+    const q1 = `${unit} 定义 公式 人教版 初中数学`;
     const material = await searchWeb(q1, 8000);
 
     // 结果太短则补充搜索
