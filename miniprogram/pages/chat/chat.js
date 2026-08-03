@@ -58,8 +58,9 @@ Page({
     const studyTopic = wx.getStorageSync('study_topic');
     if (studyTopic) {
       wx.removeStorageSync('study_topic');
-      // 仅当当前是空会话（无消息）时自动发起，避免打断已有对话
-      if (this.data.messages.length === 0 && !this.data.isLoading) {
+      // 新会话（无 sessionId）时自动发起；欢迎语会被下面的发送流程替换
+      if (!this.data.sessionId && !this.data.isLoading) {
+        this.setData({ messages: [] }); // 清掉默认欢迎语
         this.setData({
           inputValue: `我们来学习「${studyTopic}」，先从基础概念开始讲起吧`,
         });
@@ -75,8 +76,9 @@ Page({
       const testMaterial = wx.getStorageSync('test_material') || '';
       wx.removeStorageSync('unit_test');
       wx.removeStorageSync('test_material');
-      if (this.data.messages.length === 0 && !this.data.isLoading) {
+      if (!this.data.sessionId && !this.data.isLoading) {
         this._testMaterial = testMaterial; // 传给本次发送
+        this.setData({ messages: [] }); // 清掉默认欢迎语
         this.setData({
           inputValue: `帮我摸一下我对「${unitTest}」这个知识点的掌握情况吧。不用正式出题考试，就像聊天一样：聊聊它的定义、公式、怎么用、我有没有印象，我随口答就行。你根据我的回答判断我掌握得怎么样（掌握/半懂/不会），聊完给我一个总结。`,
         });
