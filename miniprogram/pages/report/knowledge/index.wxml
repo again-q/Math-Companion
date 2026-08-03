@@ -9,19 +9,15 @@
     <text class="loading-text">加载中...</text>
   </view>
 
-  <view class="empty-state" wx:elif="{{empty}}">
-    <text class="empty-icon">📭</text>
-    <text class="empty-text">还没有学习记录，先去聊一聊吧</text>
-    <view class="empty-btn" bindtap="retry">重新加载</view>
-  </view>
+  <block wx:elif="{{!empty}}">
+    <!-- 推荐条与列表是独立条件，同时显示（不能用 wx:else 互斥链） -->
+    <view class="recommend-bar" wx:if="{{recommendTopic}}">
+      <text class="recommend-icon">🎯</text>
+      <text class="recommend-text">建议先学：{{recommendTopic}}</text>
+    </view>
 
-  <view class="recommend-bar" wx:elif="{{recommendTopic}}">
-    <text class="recommend-icon">🎯</text>
-    <text class="recommend-text">建议先学：{{recommendTopic}}</text>
-  </view>
-
-  <view class="map-list" wx:else>
-    <view class="grade-group" wx:for="{{groups}}" wx:key="grade" wx:for-item="group">
+    <view class="map-list">
+      <view class="grade-group" wx:for="{{groups}}" wx:key="grade" wx:for-item="group">
       <view class="grade-header">
         <text class="grade-name">{{group.grade}}</text>
         <view class="grade-right">
@@ -63,5 +59,12 @@
     </view>
 
     <view class="bottom-space"></view>
+    </view>
+  </block>
+
+  <view class="empty-state" wx:else>
+    <text class="empty-icon">📭</text>
+    <text class="empty-text">还没有学习记录，先去聊一聊吧</text>
+    <view class="empty-btn" bindtap="retry">重新加载</view>
   </view>
 </view>
