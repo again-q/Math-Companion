@@ -1,5 +1,6 @@
 {
   "pages": [
+    "pages/login/login",
     "pages/chat/chat",
     "pages/memory/memory",
     "pages/summary/summary",

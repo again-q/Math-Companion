@@ -1,0 +1,31 @@
+<view class="login-page">
+
+  <!-- 背景装饰 -->
+  <view class="login-deco">
+    <view class="deco-circle deco-circle-1"></view>
+    <view class="deco-circle deco-circle-2"></view>
+    <view class="deco-circle deco-circle-3"></view>
+  </view>
+
+  <!-- 主视觉 -->
+  <view class="login-main">
+    <view class="login-avatar">
+      <text class="avatar-emoji">🐰</text>
+      <view class="avatar-glow"></view>
+    </view>
+    <text class="login-title">数学小伴</text>
+    <text class="login-subtitle">让数学学习变得有趣</text>
+    <text class="login-desc">你的专属数学学习陪伴者</text>
+    <text class="login-desc-sub">聊着聊着，数学就学会了</text>
+  </view>
+
+  <!-- 底部操作 -->
+  <view class="login-bottom">
+    <view class="btn-start" hover-class="btn-hover" bindtap="onStart">
+      <text class="btn-start-icon">🚀</text>
+      <text class="btn-start-label">开始使用</text>
+    </view>
+    <text class="login-version">v1.0.0</text>
+  </view>
+
+</view>
