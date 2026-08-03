@@ -14,9 +14,10 @@ const FUNCTION_NAME = 'math-agent';
  * @param {string} content - 用户消息
  * @param {string} [topic] - 知识点话题
  * @param {boolean} [deepThink] - 是否开启深度思考（更高质量回答）
+ * @param {string} [material] - 教材参考资料（水平测试用）
  * @returns {Promise<{reply: string, sessionId: string, emotion: string}>}
  */
-function sendMessage(sessionId, content, topic, deepThink) {
+function sendMessage(sessionId, content, topic, deepThink, material) {
   return new Promise((resolve, reject) => {
     wx.cloud.callFunction({
       name: FUNCTION_NAME,
@@ -27,6 +28,7 @@ function sendMessage(sessionId, content, topic, deepThink) {
           content: content,
           topic: topic || null,
           deepThink: !!deepThink,
+          material: material || null,
         },
       },
       success: (res) => {
@@ -269,4 +271,33 @@ function updateProfile(data) {
   });
 }
 
-module.exports = { sendMessage, getSummary, getMessages, getSessions, createSession, deleteSession, renameSession, getProfile, updateProfile };
+/**
+ * 获取单元教材参考材料（水平测试用）
+ * @param {string} unit - 单元名（如"初一上册"）
+ * @returns {Promise<{unit: string, material: string}>}
+ */
+function getUnitMaterial(unit) {
+  return new Promise((resolve, reject) => {
+    wx.cloud.callFunction({
+      name: FUNCTION_NAME,
+      data: {
+        type: 'getUnitMaterial',
+        data: { unit },
+      },
+      success: (res) => {
+        const result = res.result || {};
+        if (result.code === 0) {
+          resolve(result.data || { unit, material: '' });
+        } else {
+          reject(new Error(result.error || '获取失败'));
+        }
+      },
+      fail: (err) => {
+        console.error('[chat-service] getUnitMaterial 调用失败:', err);
+        reject(new Error('获取测试材料失败'));
+      },
+    });
+  });
+}
+
+module.exports = { sendMessage, getSummary, getMessages, getSessions, createSession, deleteSession, renameSession, getProfile, updateProfile, getUnitMaterial };

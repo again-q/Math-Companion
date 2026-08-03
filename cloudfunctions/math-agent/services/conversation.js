@@ -23,7 +23,7 @@ function detectTopic(content) {
   return null;
 }
 
-async function handleMessage({ sessionId, content, topic, deepThink }) {
+async function handleMessage({ sessionId, content, topic, deepThink, material }) {
   console.log(`[math-agent] handleMessage session=${sessionId} len=${content.length}`);
 
   if (!content || typeof content !== 'string') {
@@ -61,7 +61,7 @@ async function handleMessage({ sessionId, content, topic, deepThink }) {
     content: m.content,
   }));
 
-  const { systemPrompt, userMessage, history: fullHistory } = await buildMessage(context, content, profile, state, history);
+  const { systemPrompt, userMessage, history: fullHistory } = await buildMessage(context, content, profile, state, history, material);
 
   const rawReply = await callDeepSeek({ systemPrompt, userMessage, history: fullHistory }, { timeout: 25000, maxRetries: 0, deepThink: !!deepThink });
 

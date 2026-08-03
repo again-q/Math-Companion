@@ -9,6 +9,7 @@ const { getSessions, createSession, deleteSession, renameSession } = require('./
 const { handleGetMessages } = require('./handlers/getMessages');
 const { getProfile, updateProfile, addExp } = require('./handlers/profile');
 const { rebuildMemory } = require('./services/memory-builder');
+const { getUnitMaterial } = require('./handlers/unitTest');
 
 exports.main = async (event, context) => {
   const { type, data } = event;
@@ -58,6 +59,8 @@ exports.main = async (event, context) => {
       case 'rebuildMemory':
         await rebuildMemory();
         return { code: 0, message: 'memory 重建完成' };
+      case 'getUnitMaterial':
+        return await getUnitMaterial(data);
       default:
         console.error(`[math-agent] 未知事件类型: ${type}`);
         return { code: 400, error: `未知事件类型: ${type}` };

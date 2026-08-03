@@ -42,7 +42,7 @@
 
 .grade-header {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   justify-content: space-between;
   margin-bottom: var(--space);
   padding: 0 4rpx;
@@ -52,6 +52,53 @@
   font-size: var(--font-lg);
   font-weight: 700;
   color: var(--primary-dark);
+}
+
+.grade-right {
+  display: flex;
+  align-items: center;
+  gap: var(--space);
+}
+
+/* 单元状态标签 */
+.unit-status {
+  font-size: var(--font-xs);
+  padding: 4rpx 14rpx;
+  border-radius: var(--radius-full);
+}
+
+.unit-status.none {
+  background: var(--bg-input);
+  color: var(--text-tertiary);
+}
+
+.unit-status.mid {
+  background: rgba(255,149,0,0.15);
+  color: #B26A00;
+}
+
+.unit-status.good {
+  background: rgba(52,199,89,0.15);
+  color: #2E7D32;
+}
+
+/* 单元测试按钮 */
+.unit-test-btn {
+  padding: 8rpx 20rpx;
+  border-radius: var(--radius-full);
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.unit-test-btn:active {
+  transform: scale(0.95);
+  opacity: 0.85;
+}
+
+.unit-test-text {
+  font-size: var(--font-xs);
+  color: var(--text-on-primary);
+  font-weight: 600;
 }
 
 .grade-count {

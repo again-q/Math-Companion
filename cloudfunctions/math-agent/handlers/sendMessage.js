@@ -20,6 +20,7 @@ async function sendMessage(data, context) {
       content: data.content.trim(),
       topic: data.topic || null,
       deepThink: data.deepThink || false,
+      material: data.material || null,
     });
 
     await addExp(10);

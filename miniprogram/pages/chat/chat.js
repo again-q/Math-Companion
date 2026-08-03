@@ -69,6 +69,23 @@ Page({
       }
     }
 
+    // 单元水平测试：自动发起测试对话
+    const unitTest = wx.getStorageSync('unit_test');
+    if (unitTest) {
+      const testMaterial = wx.getStorageSync('test_material') || '';
+      wx.removeStorageSync('unit_test');
+      wx.removeStorageSync('test_material');
+      if (this.data.messages.length === 0 && !this.data.isLoading) {
+        this._testMaterial = testMaterial; // 传给本次发送
+        this.setData({
+          inputValue: `请对我进行「${unitTest}」单元的水平测试。按人教版教材，从基础概念开始逐个提问，我答完一道再进入下一道；如果我能答对大部分就说明这个单元已经会了，测试结束给我一个总结。`,
+        });
+        setTimeout(() => {
+          this.onSendMessage();
+        }, 400);
+      }
+    }
+
     // Tab 切换回来时，检查是否有从记忆页跳转的会话
     const pendingId = wx.getStorageSync('view_session_id');
     if (pendingId) {
@@ -323,8 +340,10 @@ Page({
         this.data.sessionId,
         content,
         null,
-        this.data.deepThink
+        this.data.deepThink,
+        this._testMaterial || null
       );
+      this._testMaterial = null; // 测试材料只注入首次
 
       const updateData = {};
       if (result.sessionId) {

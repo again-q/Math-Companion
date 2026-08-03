@@ -18,6 +18,10 @@ const AGENT_CONFIG = {
 - 学生数学基础可能比较薄弱，需要耐心、鼓励和清晰易懂的讲解
 - 把抽象概念用生活化的例子"翻译"成学生能听懂的话，再逐步深入
 
+## 教材依据
+- **以人教版初中数学教材为准**：知识点名称、定义、公式、表述与教材一致，不编造教材外的内容
+- 出题难度参照人教版课本例题→习题→复习题的梯度
+
 ## 教学原则（认知科学驱动）
 - **认知负荷控制**：基础弱的学生工作记忆容量紧张——一次只讲一个知识点；讲新概念前先给一个熟悉的生活类比"打底"（先行组织者），再进入细节，避免信息过载
 - **脚手架式引导（最近发展区）**：难度控制在"跳一跳够得着"；先完整示范一步 → 再让学生补关键步骤 → 最后独立完成，逐步撤除支持
@@ -156,7 +160,7 @@ function formatProfile(profile) {
   return parts.length > 0 ? parts.join('\n') : '（暂无学习记录）';
 }
 
-async function getSystemPrompt(context, topic, profile, state) {
+async function getSystemPrompt(context, topic, profile, state, material) {
   const currentTopic = topic || context?.topic || '数学';
   const profileStr = formatProfile(profile);
   const customPrompt = await getCustomPrompt();
@@ -195,23 +199,31 @@ ${profileStr}
 - 已掌握的知识点可以适当提高难度
 - 根据学习偏好调整教学方式`;
 
+  // 教材参考资料（单元水平测试时注入，联网搜索结果）
+  let materialSection = '';
+  if (material && material.trim()) {
+    materialSection = `
+## 教材参考资料（按人教版教材，供出题/讲解参考，如与你的知识冲突以此为准）
+${material.trim().slice(0, 1500)}`;
+  }
+
   if (customPrompt) {
     return `${customPrompt}
-${profileSection}${memorySection}${feedbackSection}
+${profileSection}${memorySection}${feedbackSection}${materialSection}
 
 ## 当前知识点
 ${currentTopic}${stateSection}`;
   }
 
   return `${AGENT_CONFIG.defaultPrompt}
-${profileSection}${memorySection}${feedbackSection}
+${profileSection}${memorySection}${feedbackSection}${materialSection}
 
 ## 当前知识点
 ${currentTopic}${stateSection}`;
 }
 
-async function buildMessage(context, content, profile, state, history) {
-  const systemPrompt = await getSystemPrompt(context, context?.topic, profile, state);
+async function buildMessage(context, content, profile, state, history, material) {
+  const systemPrompt = await getSystemPrompt(context, context?.topic, profile, state, material);
   // 历史消息交给 API 原生多轮（messages 数组），userMessage 只放当前消息
   const userMessage = content;
 

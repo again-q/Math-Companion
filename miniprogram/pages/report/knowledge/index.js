@@ -53,7 +53,18 @@ Page({
             lastPracticedAt: p.lastPracticedAt || null,
           };
         });
-        return { ...g, topics, practicedCount };
+        // 单元状态：全未开始=未学习；全部掌握=已掌握；否则学习中
+        const masteredCount = topics.filter(t => t.level >= 0.5).length;
+        let unitStatus = '未学习';
+        let unitClass = 'none';
+        if (topics.length > 0 && masteredCount === topics.length) {
+          unitStatus = '已掌握';
+          unitClass = 'good';
+        } else if (practicedCount > 0) {
+          unitStatus = '学习中';
+          unitClass = 'mid';
+        }
+        return { ...g, topics, practicedCount, unitStatus, unitClass };
       });
 
       this.setData({ groups, loading: false, empty: data.totalSessions === 0 });
@@ -72,5 +83,26 @@ Page({
     const topic = e.currentTarget.dataset.topic;
     wx.setStorageSync('study_topic', topic);
     wx.switchTab({ url: '/pages/chat/chat' });
+  },
+
+  // 单元水平测试：先拉取教材参考材料，再跳对话让 AI 测试
+  async onTestUnit(e) {
+    const unit = e.currentTarget.dataset.unit;
+    wx.showLoading({ title: '准备测试...', mask: true });
+    try {
+      const result = await chatService.getUnitMaterial(unit);
+      const material = (result && result.material) || '';
+      wx.setStorageSync('unit_test', unit);
+      wx.setStorageSync('test_material', material);
+      wx.hideLoading();
+      wx.switchTab({ url: '/pages/chat/chat' });
+    } catch (err) {
+      console.error('[knowledge] 获取测试材料失败:', err);
+      wx.hideLoading();
+      // 失败也允许测试（AI 用自带知识）
+      wx.setStorageSync('unit_test', unit);
+      wx.setStorageSync('test_material', '');
+      wx.switchTab({ url: '/pages/chat/chat' });
+    }
   },
 });
