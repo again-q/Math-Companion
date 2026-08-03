@@ -38,7 +38,7 @@ Page({
         ...s,
         time: formatDateTime(s.updatedAt || s.createdAt),
         msgCount: s.totalMessages || 0,
-        title: s.title || '未命名对话',
+        title: s.title || '闲聊',
       }));
       this.setData({ sessions, loading: false, swipedSessionId: null });
     } catch (e) {

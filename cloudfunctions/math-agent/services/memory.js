@@ -66,7 +66,8 @@ async function createSession(topic) {
     data: {
       sessionId,
       status: 'active',
-      title: '',
+      // 会话标题 = 知识点名 或 闲聊
+      title: topic || '闲聊',
       createdAt: now,
       updatedAt: now,
       topic: topic || '',

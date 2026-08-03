@@ -14,6 +14,7 @@ Page({
   data: {
     loading: true,
     groups: [],
+    recommendTopic: '',
     empty: false,
   },
 
@@ -67,7 +68,28 @@ Page({
         return { ...g, topics, practicedCount, unitStatus, unitClass };
       });
 
-      this.setData({ groups, loading: false, empty: data.totalSessions === 0 });
+      // 单元排序：未学习 > 学习中 > 已掌握（优先弹没学过的和掌握度低的）
+      const unitOrder = { '未学习': 0, '学习中': 1, '已掌握': 2 };
+      groups.sort((a, b) => (unitOrder[a.unitStatus] ?? 1) - (unitOrder[b.unitStatus] ?? 1));
+
+      // 单元内知识点排序：未开始优先，然后按掌握度升序（低的在前）
+      groups.forEach(g => {
+        g.topics.sort((a, b) => {
+          if (a.level === 0 && b.level === 0) return 0;
+          if (a.level === 0) return -1;
+          if (b.level === 0) return 1;
+          return a.level - b.level;
+        });
+      });
+
+      // 推荐知识点：第一个未开始或掌握度 < 0.3 的
+      let recommendTopic = '';
+      for (const g of groups) {
+        const first = g.topics.find(t => t.level === 0 || t.level < 0.3);
+        if (first) { recommendTopic = first.topic; break; }
+      }
+
+      this.setData({ groups, recommendTopic, loading: false, empty: data.totalSessions === 0 });
     } catch (e) {
       console.error('[knowledge] 加载失败:', e);
       this.setData({ loading: false, empty: true });

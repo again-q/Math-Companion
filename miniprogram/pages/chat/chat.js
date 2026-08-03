@@ -209,7 +209,7 @@ Page({
 
       this.setData({
         sessionId: targetId,
-        sessionTitle: targetSession?.title || '对话',
+        sessionTitle: targetSession?.title || '闲聊',
         messages: messages,
         msgCounter: messages.length,
         isLoading: false,

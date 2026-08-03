@@ -28,6 +28,31 @@
 }
 
 /* ============================================================
+   推荐学习条
+   ============================================================ */
+.recommend-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--space);
+  background: linear-gradient(135deg, rgba(255,126,179,0.12) 0%, rgba(255,181,194,0.18) 100%);
+  border: 2rpx solid rgba(255,126,179,0.25);
+  border-radius: var(--radius-lg);
+  padding: var(--space) var(--space-lg);
+  margin-bottom: var(--space-xl);
+  animation: fadeInUp 0.35s ease both;
+}
+
+.recommend-icon {
+  font-size: 34rpx;
+}
+
+.recommend-text {
+  font-size: var(--font-sm);
+  color: var(--primary-dark);
+  font-weight: 600;
+}
+
+/* ============================================================
    单元分组
    ============================================================ */
 .map-list {

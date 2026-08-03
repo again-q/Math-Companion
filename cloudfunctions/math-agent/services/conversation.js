@@ -43,9 +43,13 @@ async function handleMessage({ sessionId, content, topic, deepThink, material })
   }
 
   if (resolvedTopic) {
+    // 标题自动 = 知识点名（仅当还是默认名时覆盖，用户重命名过则保留）
+    const cur = await db.collection('mt_sessions').where({ sessionId: currentSessionId }).limit(1).get();
+    const curTitle = cur.data[0]?.title;
+    const isDefaultTitle = !curTitle || curTitle === '新对话' || curTitle === '闲聊';
     await db.collection('mt_sessions')
       .where({ sessionId: currentSessionId })
-      .update({ data: { topic: resolvedTopic } });
+      .update({ data: { topic: resolvedTopic, ...(isDefaultTitle ? { title: resolvedTopic } : {}) } });
   }
 
   const context = await memory.loadContext(currentSessionId);
